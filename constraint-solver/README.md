@@ -2,6 +2,12 @@
 
 > Solve constraint satisfaction and optimization problems using four solvers in parallel: **OR-Tools**, **Timefold**, **Choco Solver**, and **Z3**. Results exported as a responsive HTML report with dark/light theme.
 
+## Installation
+
+```bash
+npx skills add shkna1368/skills --skill constraint-solver
+```
+
 ## Metadata
 
 - **Author:** Shabab Koohi
