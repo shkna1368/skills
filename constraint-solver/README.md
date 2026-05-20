@@ -53,14 +53,6 @@ curl -sL -o gson.jar "https://repo1.maven.org/maven2/com/google/code/gson/gson/2
 3. The skill generates a Python solver script
 4. Run the script — results open in your browser
 
-### Example
-
-**Input:** "Schedule 10 nurses across 7 days with 3 shifts per day. Each nurse works max 5 shifts per week. Every shift needs exactly 1 nurse."
-
-**Output:** A Python file that solves with all 4 solvers and produces `result.html` showing the complete schedule grid from each solver.
-
-See [`nurses.xlsx`](nurses.xlsx) for a sample data file.
-
 ## Example Output
 
 The skill generates an interactive HTML report showing results from all 4 solvers side by side. Here's what the output looks like:
