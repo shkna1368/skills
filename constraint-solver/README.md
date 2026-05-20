@@ -102,6 +102,5 @@ constraint-solver/
 ├── CHANGELOG.md          # Version history
 ├── references/
 │   └── solver-api.md     # API patterns for all solvers
-├── nurses.xlsx           # Example input data
 └── 100-problems.html     # Example output report
 ```
