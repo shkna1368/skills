@@ -1,0 +1,7 @@
+.DS_Store
+.idea/
+*.pyc
+__pycache__/
+choco-solver.jar
+gson.jar
+result.html
