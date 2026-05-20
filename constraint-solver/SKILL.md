@@ -1,5 +1,5 @@
 ---
-name: da-constraint-solver
+name: constraint-solver
 description: "Solve constraint satisfaction problems using four solvers in parallel: Google OR-Tools, Timefold, Choco Solver (Java), and Z3 (Microsoft). Export results as a responsive HTML report with dark/light theme. Use this skill for scheduling, planning, routing, resource allocation, verification, or logic problems. Trigger phrases: 'constraint satisfaction', 'optimization', 'scheduling', 'planning problem', 'vehicle routing', 'timetabling', 'bin packing', 'frequency assignment', 'network slicing', 'resource allocation', 'sprint planning', 'project scheduling', 'portfolio optimization', 'task assignment', 'nurse scheduling', 'verification', 'logic problem', 'symbolic reasoning', 'SAT', 'SMT'. Do NOT use for simple sorting or filtering."
 metadata:
   owner: group:default/da
