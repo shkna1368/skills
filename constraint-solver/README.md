@@ -55,9 +55,11 @@ curl -sL -o gson.jar "https://repo1.maven.org/maven2/com/google/code/gson/gson/2
 
 ## Example Output
 
-The skill generates an interactive HTML report showing results from all 4 solvers side by side. Here's what the output looks like:
+The skill generates an interactive HTML report showing results from all 4 solvers side by side:
 
-👉 **[View the full 100-problem showcase](https://htmlpreview.github.io/?https://github.com/shkna1368/skills/blob/main/constraint-solver/100-problems.html)**
+[![Example Output](example-output.png)](https://htmlpreview.github.io/?https://github.com/shkna1368/skills/blob/main/constraint-solver/100-problems.html)
+
+[![View Full Showcase](https://img.shields.io/badge/View_Full_Showcase-blue?style=for-the-badge)](https://htmlpreview.github.io/?https://github.com/shkna1368/skills/blob/main/constraint-solver/100-problems.html)
 
 The report covers **100 real-world problems** across 10 domains:
 
