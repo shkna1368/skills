@@ -18,6 +18,81 @@ npx skills add shkna1368/skills --skill microbench
 npx skills add shkna1368/skills --skill performance-engineer
 ```
 
+### Install in Agentic Coding Tools
+
+<details>
+<summary>Claude Code</summary>
+
+```bash
+# Install individual skills
+claude mcp add skills-constraint-solver -- npx -y skills run shkna1368/skills --skill constraint-solver
+claude mcp add skills-microbench -- npx -y skills run shkna1368/skills --skill microbench
+claude mcp add skills-performance-engineer -- npx -y skills run shkna1368/skills --skill performance-engineer
+```
+</details>
+
+<details>
+<summary>Kiro</summary>
+
+```bash
+npx skills install shkna1368/skills --skill constraint-solver --client kiro
+npx skills install shkna1368/skills --skill microbench --client kiro
+npx skills install shkna1368/skills --skill performance-engineer --client kiro
+```
+
+Or copy each skill's `SKILL.md` to `.kiro/skills/<skill-name>/SKILL.md` in your project.
+</details>
+
+<details>
+<summary>Codex</summary>
+
+```bash
+npx skills install shkna1368/skills --skill constraint-solver --client codex
+npx skills install shkna1368/skills --skill microbench --client codex
+npx skills install shkna1368/skills --skill performance-engineer --client codex
+```
+
+Or copy `SKILL.md` content into your Codex instructions file (`AGENTS.md` or `codex.md`).
+</details>
+
+<details>
+<summary>Cursor</summary>
+
+```bash
+npx skills install shkna1368/skills --skill constraint-solver --client cursor
+npx skills install shkna1368/skills --skill microbench --client cursor
+npx skills install shkna1368/skills --skill performance-engineer --client cursor
+```
+
+Or copy each skill's `SKILL.md` to `.cursor/rules/<skill-name>.md` in your project.
+</details>
+
+<details>
+<summary>Windsurf</summary>
+
+```bash
+npx skills install shkna1368/skills --skill constraint-solver --client windsurf
+npx skills install shkna1368/skills --skill microbench --client windsurf
+npx skills install shkna1368/skills --skill performance-engineer --client windsurf
+```
+
+Or copy each skill's `SKILL.md` to `.windsurf/rules/<skill-name>.md` in your project.
+</details>
+
+<details>
+<summary>Amazon Q Developer CLI</summary>
+
+Copy each skill's `SKILL.md` to `.amazonq/rules/<skill-name>.md` in your project:
+
+```bash
+# Manual setup
+mkdir -p .amazonq/rules
+cp constraint-solver/SKILL.md .amazonq/rules/constraint-solver.md
+cp microbench/SKILL.md .amazonq/rules/microbench.md
+cp performance-engineer/SKILL.md .amazonq/rules/performance-engineer.md
+```
+</details>
+
 ## Author
 
 **Shabab Koohi** — [GitHub](https://github.com/shkna1368)

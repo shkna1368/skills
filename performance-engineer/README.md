@@ -1,5 +1,76 @@
 # Performance Engineer Skill — Help Guide
 
+## Installation
+
+```bash
+npx skills add shkna1368/skills --skill performance-engineer
+```
+
+### Install in Agentic Coding Tools
+
+<details>
+<summary>Claude Code</summary>
+
+```bash
+claude mcp add skills-performance-engineer -- npx -y skills run shkna1368/skills --skill performance-engineer
+```
+
+Or add to `.claude/settings.json`:
+```json
+{
+  "permissions": {
+    "allow": ["skills-performance-engineer"]
+  }
+}
+```
+</details>
+
+<details>
+<summary>Kiro</summary>
+
+```bash
+npx skills install shkna1368/skills --skill performance-engineer --client kiro
+```
+
+Or copy `SKILL.md` to `.kiro/skills/performance-engineer/SKILL.md` in your project.
+</details>
+
+<details>
+<summary>Codex</summary>
+
+```bash
+npx skills install shkna1368/skills --skill performance-engineer --client codex
+```
+
+Or copy `SKILL.md` content into your Codex instructions file (`AGENTS.md` or `codex.md`).
+</details>
+
+<details>
+<summary>Cursor</summary>
+
+```bash
+npx skills install shkna1368/skills --skill performance-engineer --client cursor
+```
+
+Or copy `SKILL.md` to `.cursor/rules/performance-engineer.md` in your project.
+</details>
+
+<details>
+<summary>Windsurf</summary>
+
+```bash
+npx skills install shkna1368/skills --skill performance-engineer --client windsurf
+```
+
+Or copy `SKILL.md` to `.windsurf/rules/performance-engineer.md` in your project.
+</details>
+
+<details>
+<summary>Amazon Q Developer CLI</summary>
+
+Copy `SKILL.md` to `.amazonq/rules/performance-engineer.md` in your project.
+</details>
+
 ## What is this?
 
 A Kiro skill that automatically profiles your microservices, finds performance bottlenecks, and tells you exactly which file and line of code to fix — with before/after code snippets.

@@ -80,6 +80,71 @@ You: "Benchmark the service layer of this project"
 npx skills add shkna1368/skills --skill microbench
 ```
 
+### Install in Agentic Coding Tools
+
+<details>
+<summary>Claude Code</summary>
+
+```bash
+claude mcp add skills-microbench -- npx -y skills run shkna1368/skills --skill microbench
+```
+
+Or add to `.claude/settings.json`:
+```json
+{
+  "permissions": {
+    "allow": ["skills-microbench"]
+  }
+}
+```
+</details>
+
+<details>
+<summary>Kiro</summary>
+
+```bash
+npx skills install shkna1368/skills --skill microbench --client kiro
+```
+
+Or copy `SKILL.md` to `.kiro/skills/microbench/SKILL.md` in your project.
+</details>
+
+<details>
+<summary>Codex</summary>
+
+```bash
+npx skills install shkna1368/skills --skill microbench --client codex
+```
+
+Or copy `SKILL.md` content into your Codex instructions file (`AGENTS.md` or `codex.md`).
+</details>
+
+<details>
+<summary>Cursor</summary>
+
+```bash
+npx skills install shkna1368/skills --skill microbench --client cursor
+```
+
+Or copy `SKILL.md` to `.cursor/rules/microbench.md` in your project.
+</details>
+
+<details>
+<summary>Windsurf</summary>
+
+```bash
+npx skills install shkna1368/skills --skill microbench --client windsurf
+```
+
+Or copy `SKILL.md` to `.windsurf/rules/microbench.md` in your project.
+</details>
+
+<details>
+<summary>Amazon Q Developer CLI</summary>
+
+Copy `SKILL.md` to `.amazonq/rules/microbench.md` in your project.
+</details>
+
 ## Author
 
 **Shabab Koohi** — [GitHub](https://github.com/shkna1368)

@@ -8,6 +8,71 @@
 npx skills add shkna1368/skills --skill constraint-solver
 ```
 
+### Install in Agentic Coding Tools
+
+<details>
+<summary>Claude Code</summary>
+
+```bash
+claude mcp add skills-constraint-solver -- npx -y skills run shkna1368/skills --skill constraint-solver
+```
+
+Or add to `.claude/settings.json`:
+```json
+{
+  "permissions": {
+    "allow": ["skills-constraint-solver"]
+  }
+}
+```
+</details>
+
+<details>
+<summary>Kiro</summary>
+
+```bash
+npx skills install shkna1368/skills --skill constraint-solver --client kiro
+```
+
+Or copy `SKILL.md` to `.kiro/skills/constraint-solver/SKILL.md` in your project.
+</details>
+
+<details>
+<summary>Codex</summary>
+
+```bash
+npx skills install shkna1368/skills --skill constraint-solver --client codex
+```
+
+Or copy `SKILL.md` content into your Codex instructions file (`AGENTS.md` or `codex.md`).
+</details>
+
+<details>
+<summary>Cursor</summary>
+
+```bash
+npx skills install shkna1368/skills --skill constraint-solver --client cursor
+```
+
+Or copy `SKILL.md` to `.cursor/rules/constraint-solver.md` in your project.
+</details>
+
+<details>
+<summary>Windsurf</summary>
+
+```bash
+npx skills install shkna1368/skills --skill constraint-solver --client windsurf
+```
+
+Or copy `SKILL.md` to `.windsurf/rules/constraint-solver.md` in your project.
+</details>
+
+<details>
+<summary>Amazon Q Developer CLI</summary>
+
+Copy `SKILL.md` to `.amazonq/rules/constraint-solver.md` in your project.
+</details>
+
 ## Metadata
 
 - **Author:** Shabab Koohi
