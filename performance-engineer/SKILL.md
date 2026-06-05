@@ -475,6 +475,19 @@ Example:
 
 > **Rule of thumb:** If you don't know, start with a **breakpoint test** — ramp until something breaks. That tells you both the ceiling AND where the bottleneck is.
 
+**Mandatory test sequence (always run both):**
+
+```
+1. Breakpoint test → Find the ceiling and the bottleneck
+         │
+         ▼ (use 50-70% of breaking point as sustainable load)
+2. Soak test (5 min minimum) → Check memory leaks at sustainable load
+```
+
+After the breakpoint test completes, **always** run a soak test at 50-70% of the discovered breaking point. This catches memory leaks, connection pool exhaustion, and resource accumulation that only appear over time.
+
+Example: if breakpoint = 400 RPS, run soak at 250 RPS for 5+ minutes.
+
 **Execution:**
 ```bash
 # k6 — ramp-up stages (preferred over flat VUs)

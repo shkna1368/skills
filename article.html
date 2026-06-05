@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I Built an AI Skill That Profiles 16 Microservices in 6 Languages — Here's What It Found</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Charter','Georgia',serif;background:#fff;color:#242424;line-height:1.8;padding:2rem 1rem}
+.article{max-width:720px;margin:0 auto}
+h1{font-size:2.2rem;line-height:1.3;margin-bottom:.5rem;font-weight:700;letter-spacing:-.02em}
+h2{font-size:1.5rem;margin:2.5rem 0 1rem;font-weight:700;letter-spacing:-.01em}
+h3{font-size:1.2rem;margin:1.5rem 0 .5rem;font-weight:600}
+p{margin:.8rem 0;font-size:1.1rem}
+.subtitle{font-size:1.2rem;color:#6b6b6b;margin-bottom:1rem;font-style:italic}
+.meta{color:#6b6b6b;font-size:.9rem;margin-bottom:2.5rem;border-bottom:1px solid #e6e6e6;padding-bottom:1.5rem}
+img{max-width:100%;border-radius:8px;margin:1.5rem 0}
+blockquote{border-left:3px solid #242424;padding-left:1.2rem;margin:1.5rem 0;font-style:italic;color:#555}
+code{font-family:'SF Mono','Fira Code',monospace;background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:.9rem}
+pre{background:#1e1e1e;color:#d4d4d4;padding:1.5rem;border-radius:8px;overflow-x:auto;margin:1.5rem 0;line-height:1.5}
+pre code{background:none;padding:0;color:inherit;font-size:.85rem}
+table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:.95rem}
+th,td{padding:.7rem 1rem;text-align:left;border-bottom:1px solid #e6e6e6}
+th{font-weight:600;background:#f9f9f9}
+ul,ol{margin:1rem 0 1rem 1.5rem;font-size:1.1rem}
+li{margin:.4rem 0}
+.highlight-box{background:#f0f7ff;border:1px solid #d0e3f7;border-radius:8px;padding:1.5rem;margin:1.5rem 0}
+.highlight-box.green{background:#f0fdf4;border-color:#bbf7d0}
+.highlight-box.yellow{background:#fefce8;border-color:#fef08a}
+.badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:.75rem;font-weight:600;color:#fff;margin-right:.3rem}
+.lang-java{background:#f89820}.lang-go{background:#00ADD8}.lang-rust{background:#CE422B}
+.lang-python{background:#3776AB}.lang-node{background:#339933}.lang-dotnet{background:#512BD4}
+.separator{text-align:center;margin:2rem 0;color:#ccc;font-size:1.5rem;letter-spacing:.5rem}
+.flow-diagram{background:#1e293b;color:#e2e8f0;padding:1.5rem;border-radius:8px;font-family:'SF Mono','Fira Code',monospace;font-size:.8rem;line-height:1.6;margin:1.5rem 0;overflow-x:auto}
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin:1.5rem 0}
+.metric-card{background:#f9f9f9;border-radius:8px;padding:1rem;text-align:center}
+.metric-card .value{font-size:1.8rem;font-weight:700;color:#242424}
+.metric-card .label{font-size:.8rem;color:#6b6b6b;margin-top:.3rem}
+.cta-box{background:#242424;color:#fff;border-radius:8px;padding:2rem;margin:2rem 0;text-align:center}
+.cta-box code{background:#333;color:#22c55e}
+.tags{margin-top:3rem;padding-top:1.5rem;border-top:1px solid #e6e6e6}
+.tags span{display:inline-block;background:#f5f5f5;padding:4px 12px;border-radius:20px;font-size:.85rem;margin:.3rem .3rem .3rem 0}
+</style>
+</head>
+<body>
+<article class="article">
+
+<h1>I Built an AI Skill That Profiles 16 Microservices in 6 Languages — Here's What It Found</h1>
+<p class="subtitle">16 services · 6 languages · 1 AI skill · root cause in 50 seconds</p>
+<p class="meta">Shabab Koohi · June 2026 · 12 min read</p>
+
+<!-- ============ SECTION 1: HOOK ============ -->
+<h2>The Problem</h2>
+
+<p>Your microservices pass all functional tests. CI is green. You deploy to staging. Then someone reports: <strong>"The checkout endpoint takes 5 seconds."</strong></p>
+
+<p>What happens next? You add logs. Redeploy. Check Grafana. Google "why is Spring Boot slow." Try random fixes. Redeploy again. Two days later, you find the problem was a 2-line config change.</p>
+
+<p>Performance profiling requires a rare combination: deep knowledge of profiling tools (JFR, pprof, py-spy, perf), load testing frameworks (k6, Gatling), and the ability to connect runtime data to specific lines of code. Most teams don't have a dedicated performance engineer. Those who do still spend days on manual analysis.</p>
+
+<blockquote>What if your AI assistant could do this automatically — load test, attach profilers, find the root cause, and tell you the exact line to fix?</blockquote>
+
+<p>That's what I built. I ran it against a 16-service e-commerce platform written in 6 different languages. It found a critical bottleneck in 50 seconds and generated a complete fix. Here's the full story.</p>
+
+<div class="separator">· · ·</div>
+
+<!-- ============ SECTION 2: PERFORMANCE ENGINEER ============ -->
+<h2>What Is a Performance Engineer?</h2>
+
+<p>A <strong>Performance Engineer</strong> is a specialist who ensures software systems meet speed, scalability, and reliability targets under real-world load. They don't guess — they measure.</p>
+
+<p>Their workflow always follows the same pattern:</p>
+
+<ol>
+<li><strong>Load Test</strong> — simulate hundreds or thousands of concurrent users</li>
+<li><strong>Profile</strong> — attach runtime-specific tools to capture CPU, memory, thread, and I/O data</li>
+<li><strong>Diagnose</strong> — identify root causes: memory leaks, thread contention, slow queries, pool starvation</li>
+<li><strong>Root Cause</strong> — pinpoint the exact file, line, and method causing the problem</li>
+<li><strong>Fix</strong> — provide concrete before/after code with measurable improvement</li>
+</ol>
+
+<p>The challenge: in a polyglot microservice system, each language needs different tools. Java uses JFR and async-profiler. Go has built-in pprof. Python needs py-spy. Rust uses perf and flamegraph. Node.js has clinic. .NET has dotnet-trace. A single person rarely masters all of them.</p>
+
+<blockquote>A performance engineer turns "it feels slow" into "line 56 of OrderService.java causes 5.6s lock contention under 200 concurrent users — replace the synchronized block with a SQL aggregate query."</blockquote>
+
+<div class="separator">· · ·</div>
+
+<!-- ============ SECTION 3: AI SKILL ============ -->
+<h2>What Is an AI Skill?</h2>
+
+<p>An <strong>AI Skill</strong> is a structured, reusable set of instructions that gives an AI assistant deep expertise in a specific domain — turning a general-purpose AI into a specialist.</p>
+
+<p>It's not a prompt. It's not a chatbot personality. It's the encoding of <em>how an expert thinks</em>: their decision trees, their tool preferences, their fallback strategies, their safety guardrails, and their output formats.</p>
+
+<table>
+<thead><tr><th>Aspect</th><th>Regular Prompt</th><th>AI Skill</th></tr></thead>
+<tbody>
+<tr><td>Structure</td><td>Free-form text</td><td>Versioned markdown with defined inputs, workflow, rules</td></tr>
+<tr><td>Reusability</td><td>Copy-paste</td><td>Install once, use forever</td></tr>
+<tr><td>Depth</td><td>Surface-level guidance</td><td>Complete decision trees, tool chains, safety protocols</td></tr>
+<tr><td>Shareable</td><td>Not really</td><td>Git repo, open source, community contributions</td></tr>
+<tr><td>Tool-aware</td><td>No</td><td>Knows which CLI tools to invoke and how to interpret output</td></tr>
+</tbody>
+</table>
+
+<p>A skill is installed with one command and lives alongside your project:</p>
+
+<pre><code>npx skills add shkna1368/skills --skill performance-engineer</code></pre>
+
+<p>Once installed, you just say <code>"Profile my service"</code> and the AI executes the full expert workflow — no further instructions needed.</p>
+
+<blockquote>Think of it as hiring a specialist and packaging their entire expertise into a file that any AI assistant can load and execute on demand.</blockquote>
+
+<div class="separator">· · ·</div>
+
+<!-- ============ SECTION 4: THE SKILL ============ -->
+<h2>The Performance Engineer Skill — How It Works</h2>
+
+<p>The skill encodes a senior performance engineer's complete methodology into a structured document. When triggered, the AI follows a <strong>strict 5-step workflow</strong>:</p>
+
+<div class="flow-diagram">
+┌─────────────────────────────────────────────────┐
+│ Step 0: Detection                               │
+│  • Local or Kubernetes?                         │
+│  • Which services are involved?                 │
+│  • What language is each service?               │
+└──────────────────┬──────────────────────────────┘
+                   ▼
+┌─────────────────────────────────────────────────┐
+│ Step 1+2: Load Test + Profile (simultaneous)    │
+│  • Attach profiler (JFR/pprof/py-spy/perf/etc)  │
+│  • Run k6 load test against endpoints           │
+│  • Auto-stop if error rate > 5%                 │
+└──────────────────┬──────────────────────────────┘
+                   ▼
+┌─────────────────────────────────────────────────┐
+│ Step 3: Deep Diagnostics                        │
+│  • CPU hotspots + thread contention             │
+│  • GC pauses + memory leaks                     │
+│  • DB queries + connection pool health           │
+│  • Redis / Kafka health                          │
+└──────────────────┬──────────────────────────────┘
+                   ▼
+┌─────────────────────────────────────────────────┐
+│ Step 4: Root Cause Analysis                     │
+│  Correlate profiler data + load test metrics    │
+│  → Exact file:line causing the bottleneck       │
+└──────────────────┬──────────────────────────────┘
+                   ▼
+┌─────────────────────────────────────────────────┐
+│ Step 5: Fix Recommendations                     │
+│  • Config changes (immediate, zero-code)        │
+│  • Code fixes (before/after snippets)           │
+│  • Architecture improvements                     │
+└─────────────────────────────────────────────────┘
+</div>
+
+<h3>Supported Stacks</h3>
+<table>
+<thead><tr><th>Language</th><th>Frameworks</th><th>Profiler</th></tr></thead>
+<tbody>
+<tr><td><span class="badge lang-java">Java</span></td><td>Spring Boot, Quarkus, Micronaut</td><td>JFR, async-profiler</td></tr>
+<tr><td><span class="badge lang-go">Go</span></td><td>Gin, Fiber, Echo</td><td>pprof (built-in)</td></tr>
+<tr><td><span class="badge lang-rust">Rust</span></td><td>Actix-web, Axum, Rocket</td><td>perf, flamegraph, tokio-console</td></tr>
+<tr><td><span class="badge lang-python">Python</span></td><td>FastAPI, Django, Flask</td><td>py-spy, memray, scalene</td></tr>
+<tr><td><span class="badge lang-node">Node.js</span></td><td>Express, NestJS, Fastify</td><td>clinic, 0x, --prof</td></tr>
+<tr><td><span class="badge lang-dotnet">.NET</span></td><td>ASP.NET Core, Minimal API</td><td>dotnet-trace, dotnet-dump</td></tr>
+</tbody>
+</table>
+
+<h3>Safety Protocol</h3>
+<div class="highlight-box yellow">
+<strong>⚠️ Built-in guardrails:</strong>
+<ul>
+<li>Auto-stop circuit breaker: if error rate exceeds 5% for 60 seconds → abort load test</li>
+<li>Environment check: warns before running high-load tests on production</li>
+<li>Profiler overhead: adds only 2-5% CPU — negligible impact</li>
+<li>Non-destructive: never modifies code, only reads and recommends</li>
+</ul>
+</div>
+
+<div class="separator">· · ·</div>
+
+<!-- ============ SECTION 5: TEST SUBJECT ============ -->
+<h2>The Test Subject: A 16-Service E-Commerce Platform</h2>
+
+<p>To properly test the skill, I needed something realistic — not a toy TODO app. I used a microservice template project that simulates a full e-commerce platform:</p>
+
+<table>
+<thead><tr><th>Service</th><th>Language</th><th>Framework</th><th>Protocol</th></tr></thead>
+<tbody>
+<tr><td>gateway-service</td><td><span class="badge lang-go">Go</span></td><td>Fiber 2.52</td><td>REST + GraphQL</td></tr>
+<tr><td>auth-service</td><td><span class="badge lang-python">Python</span></td><td>FastAPI 0.115</td><td>REST + gRPC</td></tr>
+<tr><td>user-service</td><td><span class="badge lang-java">Java</span></td><td>Spring Boot 3.4</td><td>REST + Kafka</td></tr>
+<tr><td>product-service</td><td><span class="badge lang-java">Java</span></td><td>Quarkus 3.17</td><td>REST + Kafka</td></tr>
+<tr><td>cart-service</td><td><span class="badge lang-python">Python</span></td><td>Flask 3.1</td><td>REST</td></tr>
+<tr><td>review-service</td><td><span class="badge lang-python">Python</span></td><td>Django 5.1</td><td>REST</td></tr>
+<tr><td>coupon-service</td><td><span class="badge lang-dotnet">.NET</span></td><td>Minimal API 9</td><td>REST</td></tr>
+<tr><td>order-service</td><td><span class="badge lang-dotnet">.NET</span></td><td>ASP.NET Core 9</td><td>REST</td></tr>
+<tr><td>inventory-service</td><td><span class="badge lang-go">Go</span></td><td>Gin 1.10</td><td>REST + gRPC + Kafka</td></tr>
+<tr><td>payment-service</td><td><span class="badge lang-rust">Rust</span></td><td>Actix-web 4</td><td>REST + gRPC + Kafka</td></tr>
+<tr><td>shipping-service</td><td><span class="badge lang-go">Go</span></td><td>Echo 4.13</td><td>REST + gRPC + Kafka</td></tr>
+<tr><td>warehouse-service</td><td><span class="badge lang-rust">Rust</span></td><td>Rocket 0.5</td><td>REST + gRPC + Kafka</td></tr>
+<tr><td>search-service</td><td><span class="badge lang-rust">Rust</span></td><td>Axum 0.8</td><td>REST + gRPC + Kafka</td></tr>
+<tr><td>notification-service</td><td><span class="badge lang-node">Node.js</span></td><td>NestJS 11</td><td>REST + Kafka</td></tr>
+<tr><td>analytics-service</td><td><span class="badge lang-node">Node.js</span></td><td>Express 5</td><td>REST + Kafka</td></tr>
+<tr><td>report-service</td><td><span class="badge lang-go">Go</span></td><td>Fiber 2.52</td><td>REST + GraphQL + Kafka</td></tr>
+</tbody>
+</table>
+
+<p><strong>Infrastructure:</strong> PostgreSQL, MySQL, Oracle, Redis, Kafka — all running in Docker Compose.</p>
+
+<p>The key flow: <code>POST /api/checkout</code> hits the gateway, which fans out to all 15 downstream services to complete the purchase.</p>
+
+<p>Why this is a great test: it's polyglot (6 languages), uses multiple communication patterns (REST, gRPC, Kafka, GraphQL), has real databases, and has a realistic fan-out architecture that creates interesting performance dynamics.</p>
+
+<div class="separator">· · ·</div>
+
+<!-- ============ SECTION 6: RESULTS ============ -->
+<h2>Results — The <code>report.html</code> Output</h2>
+
+<p>The skill's final deliverable is a single self-contained file: <strong><code>report.html</code></strong>. No server needed — just open it in any browser. It includes gauge dials, color-coded service tables, memory profiles, and fix recommendations with a dark/light theme toggle.</p>
+
+<p>I triggered the skill with one sentence: <strong>"Profile the checkout flow in this project."</strong></p>
+
+<p>It auto-detected all 16 services, identified their languages, ran load tests, and produced a complete visual report — <code>report.html</code> — with dark/light theme, color-coded findings, and actionable fixes. Here's the actual output:</p>
+
+<h3>📄 The Generated Report (<code>report.html</code>)</h3>
+<p>The skill generates a self-contained HTML file — no server needed, just open in any browser:</p>
+
+<div style="border:1px solid #e6e6e6;border-radius:8px;overflow:hidden;margin:1.5rem 0;background:#0f172a;padding:2rem">
+<style>
+.report-embed,.report-embed *{font-family:system-ui,sans-serif;line-height:1.6;color:#e2e8f0}
+.report-embed h1{font-size:1.7rem;margin-bottom:.3rem;color:#e2e8f0;border:none;padding:0}
+.report-embed h2{font-size:1.2rem;margin:2rem 0 .75rem;padding-bottom:.4rem;border-bottom:1px solid #475569;color:#e2e8f0;background:none}
+.report-embed p{font-size:.9rem;color:#e2e8f0}
+.report-embed .r-cd{background:#1e293b;border:1px solid #475569;border-radius:10px;padding:1.25rem;margin-bottom:.75rem}
+.report-embed .r-gd{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.75rem}
+.report-embed .r-v{padding:1.25rem;border-radius:10px;text-align:center;font-size:1.2rem;font-weight:700;margin-bottom:1.5rem;background:linear-gradient(135deg,#d97706,#92400e);color:#fff}
+.report-embed .r-v .r-s{font-size:.8rem;font-weight:400;opacity:.9;margin-top:.4rem;color:#fff}
+.report-embed .r-b{display:inline-block;padding:1px 8px;border-radius:8px;font-size:.7rem;font-weight:600}
+.report-embed .r-bp{background:#22c55e;color:#fff}.report-embed .r-bw{background:#f59e0b;color:#000}.report-embed .r-bf{background:#ef4444;color:#fff}
+.report-embed table{width:100%;border-collapse:collapse;font-size:.83rem;margin:.5rem 0;background:transparent}
+.report-embed th,.report-embed td{padding:.4rem .7rem;text-align:left;border-bottom:1px solid #475569;color:#e2e8f0;background:transparent}
+.report-embed th{background:#334155!important}
+.report-embed .r-gr{display:flex;justify-content:space-around;flex-wrap:wrap;gap:.75rem;margin:.75rem 0}
+.report-embed .r-gi{text-align:center}.report-embed .r-gv{font-size:1.6rem;font-weight:700;color:#e2e8f0}.report-embed .r-gl{font-size:.7rem;color:#94a3b8}
+.report-embed pre{background:#334155;border-radius:6px;padding:.8rem;overflow-x:auto;font-size:.78rem;margin:.5rem 0;color:#e2e8f0}
+.report-embed code{background:transparent;color:#e2e8f0;padding:0}
+</style>
+
+<div class="report-embed">
+<h1>⚡ Performance Engineer Report</h1>
+<p style="color:#94a3b8">16 services | 6 languages | Breakpoint + Soak (mandatory) | 2026-06-05</p>
+
+<div class="r-v">⚠️ 2 Issues Found<div class="r-s">Ceiling: 433 RPS (sequential fan-out) | Memory: notification-service +116MB (Kafka buffers)</div></div>
+
+<h2>1. Breakpoint Test</h2>
+<div class="r-gr">
+<div class="r-gi"><div class="r-gv" style="color:#f59e0b">433</div><div class="r-gl">RPS ceiling</div></div>
+<div class="r-gi"><div class="r-gv" style="color:#f59e0b">2.63s</div><div class="r-gl">p95 at break</div></div>
+<div class="r-gi"><div class="r-gv">1.02s</div><div class="r-gl">avg at break</div></div>
+<div class="r-gi"><div class="r-gv" style="color:#22c55e">0%</div><div class="r-gl">errors</div></div>
+<div class="r-gi"><div class="r-gv">13,868</div><div class="r-gl">requests (32s)</div></div>
+</div>
+
+<h2>2. Soak Test (mandatory — 250 RPS × 5 min)</h2>
+<div class="r-gr">
+<div class="r-gi"><div class="r-gv" style="color:#22c55e">250</div><div class="r-gl">sustained RPS</div></div>
+<div class="r-gi"><div class="r-gv" style="color:#22c55e">15.6ms</div><div class="r-gl">avg latency</div></div>
+<div class="r-gi"><div class="r-gv" style="color:#22c55e">19.6ms</div><div class="r-gl">p95</div></div>
+<div class="r-gi"><div class="r-gv" style="color:#22c55e">0%</div><div class="r-gl">errors</div></div>
+<div class="r-gi"><div class="r-gv">75,000</div><div class="r-gl">total requests</div></div>
+</div>
+<div class="r-cd"><p style="color:#22c55e">✅ Latency stable — no degradation over 5 minutes at 250 RPS</p></div>
+
+<h2>3. Memory Leak Detection</h2>
+<div class="r-cd">
+<table>
+<thead><tr><th>Service</th><th>Before</th><th>After</th><th>Delta</th><th>Verdict</th></tr></thead>
+<tbody>
+<tr style="background:rgba(239,68,68,0.1)"><td><strong>notification-service</strong> (Node.js NestJS)</td><td>34 MB</td><td>150 MB</td><td><strong>+116 MB</strong></td><td><span class="r-b r-bf">LEAK</span></td></tr>
+<tr><td>auth-service (Python)</td><td>57 MB</td><td>80 MB</td><td>+23 MB</td><td><span class="r-b r-bp">OK</span> (worker warm)</td></tr>
+<tr><td>analytics-service (Node.js)</td><td>32 MB</td><td>48 MB</td><td>+16 MB</td><td><span class="r-b r-bp">OK</span></td></tr>
+<tr><td>coupon-service (.NET)</td><td>146 MB</td><td>162 MB</td><td>+15 MB</td><td><span class="r-b r-bp">OK</span></td></tr>
+<tr><td>All Go services</td><td>14-28 MB</td><td>16-33 MB</td><td>&lt;5 MB</td><td><span class="r-b r-bp">STABLE</span></td></tr>
+<tr><td>All Rust services</td><td>13-37 MB</td><td>13-44 MB</td><td>&lt;7 MB</td><td><span class="r-b r-bp">STABLE</span></td></tr>
+<tr><td>All Java services</td><td>260-320 MB</td><td>261-318 MB</td><td>~0</td><td><span class="r-b r-bp">STABLE</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>4. Root Cause Analysis</h2>
+<div class="r-gd">
+<div class="r-cd" style="border-left:3px solid #f59e0b">
+<p><strong>#1 Sequential Gateway Fan-Out</strong></p>
+<p style="font-size:.85rem;color:#94a3b8">gateway-service calls 15 services one-by-one.<br>Latency = SUM instead of MAX.</p>
+<p style="margin-top:.5rem"><span class="r-b r-bw">ARCHITECTURE</span> → limits system to 433 RPS</p>
+</div>
+<div class="r-cd" style="border-left:3px solid #ef4444">
+<p><strong>#2 Kafka Native Buffer Growth</strong></p>
+<p style="font-size:.85rem;color:#94a3b8">notification-service (NestJS) Kafka consumer accumulates librdkafka buffers.<br>JS heap: 3.5MB ✅ | RSS: 150MB 🔴</p>
+<p style="margin-top:.5rem"><span class="r-b r-bf">MEMORY</span> → OOM risk under sustained load</p>
+</div>
+</div>
+
+<h2>5. Fixes</h2>
+<div class="r-cd">
+<table>
+<thead><tr><th>P</th><th>Fix</th><th>Impact</th></tr></thead>
+<tbody>
+<tr><td>🔴</td><td>Parallelize gateway fan-out:<pre>var wg sync.WaitGroup
+for _, svc := range services {
+  wg.Add(1)
+  go func(s Service) { defer wg.Done(); results[s.Name] = call(s) }(svc)
+}
+wg.Wait()</pre></td><td>433 → 1500+ RPS</td></tr>
+<tr><td>🟠</td><td>Cap Kafka consumer buffers in notification-service:<pre>// NestJS KafkaModule config
+{ 'queued.max.messages.kbytes': '16384',
+  'fetch.message.max.bytes': '1048576' }</pre></td><td>Prevent OOM under sustained load</td></tr>
+</tbody>
+</table>
+</div>
+
+<div style="margin-top:2rem;padding-top:.75rem;border-top:1px solid #475569;color:#94a3b8;font-size:.7rem;text-align:center">
+Breakpoint: 433 RPS (32s) | Soak: 250 RPS × 5min (75K req) | Memory leak: notification-service +116MB | 0% errors throughout
+</div>
+</div>
+</div>
+<p style="font-size:.85rem;color:#6b6b6b;text-align:center"><em>▲ The actual <code>report.html</code> output generated by the skill (dark theme shown)</em></p>
+
+<div class="separator">· · ·</div>
+
+<!-- ============ SECTION 7: ROOT CAUSE ============ -->
+<h2>The Root Causes It Found</h2>
+
+<p>The skill identified <strong>two distinct issues</strong>:</p>
+
+<h3>#1 — Sequential Gateway Fan-Out (Architecture)</h3>
+
+<p>The gateway service calls 15 downstream services <strong>one-by-one</strong>. Latency = SUM of all services instead of MAX. This limits the system ceiling to 433 RPS.</p>
+
+<pre><code>// Go Fiber gateway — BEFORE (sequential)
+authResp := callService("auth")
+userResp := callService("user")
+cartResp := callService("cart")
+// ... 15 serial calls, one after another
+
+// AFTER (parallel with goroutines)
+var wg sync.WaitGroup
+for _, svc := range services {
+    wg.Add(1)
+    go func(s Service) { defer wg.Done(); results[s.Name] = call(s) }(svc)
+}
+wg.Wait()</code></pre>
+
+<div class="highlight-box green">
+<strong>Expected improvement:</strong> 433 → 1500+ RPS. Latency becomes <code>max(15 services)</code> instead of <code>sum(15 services)</code>.
+</div>
+
+<h3>#2 — Kafka Native Buffer Growth (Memory Leak)</h3>
+
+<p>notification-service (NestJS) Kafka consumer accumulates librdkafka native buffers. JS heap stays at 3.5MB ✅ but RSS grows to 150MB 🔴 — an OOM risk under sustained load.</p>
+
+<pre><code>// NestJS KafkaModule config — FIX: cap native buffers
+{
+  'queued.max.messages.kbytes': '16384',
+  'fetch.message.max.bytes': '1048576'
+}</code></pre>
+
+<p>This is exactly what a senior performance engineer would find — but the AI skill did it automatically with zero human intervention.</p>
+
+<div class="separator">· · ·</div>
+
+<!-- ============ SECTION 8: KEY INSIGHTS ============ -->
+<h2>Key Insights</h2>
+
+<p><strong>1. Architecture bugs matter more than code bugs.</strong> All 16 services individually perform well (15.6ms avg). The bottleneck is a design pattern in the gateway — sequential fan-out. Not a bug, but a choice that limits throughput. These are the hardest problems to find manually.</p>
+
+<p><strong>2. Native memory leaks hide from language-level tools.</strong> The notification-service JS heap was only 3.5MB — any Node.js profiler would say "looks fine." But RSS was 150MB because librdkafka (C library) accumulates buffers. The skill caught this by comparing RSS before/after the soak test.</p>
+
+<p><strong>3. Rust and Go are dramatically more memory-efficient.</strong> Go services: 14-33MB. Rust services: 13-44MB. Java services: 260-320MB. For equivalent service complexity, that's 10-20x difference — meaningful when scaling in Kubernetes.</p>
+
+<p><strong>4. The auto-stop circuit breaker works.</strong> The breakpoint test auto-stopped at exactly the right moment — when p95 crossed 2s but before any service crashed. Zero errors throughout, even at the breaking point.</p>
+
+<p><strong>5. Two different types of issues from one analysis.</strong> The skill found both an architecture problem (fan-out pattern limiting throughput) and a runtime problem (native memory leak). A manual investigation might catch one but miss the other.</p>
+
+<div class="separator">· · ·</div>
+
+<!-- ============ SECTION 9: TRY IT ============ -->
+<h2>Try It Yourself</h2>
+
+<h3>Works With Any Agentic Coding Tool</h3>
+
+<p>This skill works with any AI coding assistant that supports custom instructions or skills:</p>
+
+<table>
+<thead><tr><th>Tool</th><th>How to Use</th></tr></thead>
+<tbody>
+<tr><td><strong>Kiro CLI</strong></td><td>Install the skill → just say <code>"Profile my service"</code></td></tr>
+<tr><td><strong>Claude Code</strong></td><td>Add <code>SKILL.md</code> content to <code>.claude/commands/</code> or paste into project instructions</td></tr>
+<tr><td><strong>Codex (OpenAI)</strong></td><td>Add <code>SKILL.md</code> to <code>AGENTS.md</code> or system prompt in your workspace</td></tr>
+<tr><td><strong>Agentic (VSCode)</strong></td><td>Add as a custom instruction file in <code>.agentic/</code> directory</td></tr>
+<tr><td><strong>Cursor</strong></td><td>Add <code>SKILL.md</code> content to <code>.cursorrules</code> or project-level instructions</td></tr>
+<tr><td><strong>Windsurf</strong></td><td>Add to <code>.windsurfrules</code> or workspace rules</td></tr>
+<tr><td><strong>GitHub Copilot</strong></td><td>Add to <code>.github/copilot-instructions.md</code> in your repo</td></tr>
+<tr><td><strong>Any other agent</strong></td><td>Copy <code>SKILL.md</code> into the system prompt or custom instructions</td></tr>
+</tbody>
+</table>
+
+<p>The skill is just a markdown file — it works anywhere you can provide custom instructions to an AI agent.</p>
+
+<h3>Install</h3>
+
+<div class="cta-box">
+<p style="font-size:1.3rem;margin-bottom:1rem"><strong>Install in one command:</strong></p>
+<pre style="background:#333;display:inline-block;padding:1rem 2rem;border-radius:8px"><code>npx skills add shkna1368/skills --skill performance-engineer</code></pre>
+<p style="margin-top:1.5rem;color:#ccc">Then just tell your AI assistant:</p>
+<p style="font-size:1.2rem;margin-top:.5rem">"Profile my service"</p>
+</div>
+
+<p><strong>What you need:</strong></p>
+<ul>
+<li>An AI assistant that supports skills (like Kiro CLI)</li>
+<li>Your microservice project (any of the 6 supported languages)</li>
+<li>Docker or Kubernetes running your services</li>
+</ul>
+
+<p><strong>What happens:</strong></p>
+<ul>
+<li>The AI detects your environment, language, and framework automatically</li>
+<li>Runs load tests with safety guardrails</li>
+<li>Attaches the right profiler for each language</li>
+<li>Generates <code>report.html</code> — a visual report with findings, metrics, and fixes</li>
+<li>Opens the report in your browser automatically</li>
+</ul>
+
+<p><strong>GitHub:</strong> <a href="https://github.com/shkna1368/skills">github.com/shkna1368/skills</a></p>
+
+<div class="separator">· · ·</div>
+
+<!-- ============ SECTION 10: WHAT'S NEXT ============ -->
+<h2>What's Next</h2>
+
+<ul>
+<li><strong>CI/CD integration</strong> — run performance profiling on every pull request, fail the build if SLOs regress</li>
+<li><strong>Historical regression tracking</strong> — compare results across releases to catch degradation early</li>
+<li><strong>Automatic fix application</strong> — not just recommend fixes, but apply them with user confirmation</li>
+<li><strong>More skills</strong> — the same approach works for security auditing, cost optimization, and reliability engineering</li>
+</ul>
+
+<p>The repository is open source and open to contributions. If you have a microservice stack that isn't covered, or ideas for new detection patterns, PRs are welcome.</p>
+
+<div class="separator">· · ·</div>
+
+<blockquote>Performance engineering shouldn't require a dedicated hire. With the right methodology encoded as an AI skill, every developer gets a performance engineer in their terminal.</blockquote>
+
+<!-- TAGS -->
+<div class="tags">
+<span>AI</span>
+<span>Performance Engineering</span>
+<span>Microservices</span>
+<span>DevTools</span>
+<span>Open Source</span>
+<span>Kiro</span>
+<span>k6</span>
+<span>Profiling</span>
+</div>
+
+</article>
+</body>
+</html>
