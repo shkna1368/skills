@@ -7,12 +7,14 @@ A collection of AI assistant skills for solving real-world problems.
 | Skill | Description |
 |-------|-------------|
 | [constraint-solver](constraint-solver/) | Solve constraint satisfaction & optimization problems with 4 solvers in parallel (OR-Tools, Timefold, Choco, Z3) |
+| [microbench](microbench/) | Benchmark Java methods using JMH in Spring Boot and Quarkus projects. Detects anti-patterns (N+1, Thread.sleep, race conditions) and generates HTML report with fix recommendations. |
 | [performance-engineer](performance-engineer/) | Profile and diagnose microservices for performance bottlenecks across Java, Go, Rust, Python, Node.js, and .NET. Load test, profile, find root cause, and fix. |
 
 ## Installation
 
 ```bash
 npx skills add shkna1368/skills --skill constraint-solver
+npx skills add shkna1368/skills --skill microbench
 npx skills add shkna1368/skills --skill performance-engineer
 ```
 

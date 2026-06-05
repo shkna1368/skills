@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.2.0] - 2026-06-05
+
+### Added
+- `microbench` skill: benchmark Java methods using JMH with anti-pattern detection
+  - Supports Spring Boot and Quarkus (auto-detected from pom.xml)
+  - All JMH modes: throughput, average time, sampling, single-shot
+  - Source code analysis: N+1 queries, Thread.sleep, synchronized, no-pagination, race conditions
+  - HTML report with dark/light theme, grouped results, bottleneck analysis
+  - Action plan with before/after code diffs for each detected issue
+
 ## [1.1.0] - 2026-06-05
 
 ### Added
