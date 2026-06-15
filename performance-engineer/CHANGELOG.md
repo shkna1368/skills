@@ -1,5 +1,22 @@
 # Changelog — performance-engineer
 
+## [1.1.0] - 2026-06-15
+
+### Added
+- Dedicated async-profiler deep-dive section with full workflow (CPU, alloc, lock, wall-clock profiling)
+- async-profiler installation instructions for macOS (Homebrew), Linux, Docker, and Kubernetes
+- Multi-event recording support (start/stop API for precise timing with load tests)
+- async-profiler results section in HTML report: top methods, allocation hotspots, lock contention, links to interactive flame graphs
+- JFR output format support from async-profiler (`-o jfr`)
+- K8s debug container workflow for async-profiler when not in image
+- Expanded Quick Reference with 7 async-profiler commands
+- Advanced options: thread filtering, kernel frames, sampling interval
+
+### Changed
+- async-profiler promoted to **preferred** Java profiler (over JFR/JProfiler) for production-safe profiling
+- HTML report now includes async-profiler results section with flame graph links
+- README updated with async-profiler as primary Java profiler and installation guide
+
 ## [1.0.0] - 2026-06-05
 
 ### Added

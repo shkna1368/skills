@@ -8,7 +8,7 @@ A collection of AI assistant skills for solving real-world problems.
 |-------|-------------|
 | [constraint-solver](constraint-solver/) | Solve constraint satisfaction & optimization problems with 4 solvers in parallel (OR-Tools, Timefold, Choco, Z3) |
 | [microbench](microbench/) | Benchmark Java methods using JMH in Spring Boot and Quarkus projects. Detects anti-patterns (N+1, Thread.sleep, race conditions) and generates HTML report with fix recommendations. |
-| [performance-engineer](performance-engineer/) | Profile and diagnose microservices for performance bottlenecks across Java, Go, Rust, Python, Node.js, and .NET. Load test, profile, find root cause, and fix. |
+| [performance-engineer](performance-engineer/) | Profile and diagnose microservices for performance bottlenecks across Java, Go, Rust, Python, Node.js, and .NET. Load test, profile (async-profiler, JFR, pprof, py-spy), find root cause, and fix. |
 | [redteam](redteam/) | Adversarial security analysis — finds vulnerabilities, exploit chains, business logic flaws. Generates HTML report with CVSS scores, CWE mappings, PoC, and remediation. |
 
 ## Installation

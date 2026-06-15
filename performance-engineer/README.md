@@ -181,7 +181,7 @@ You: "The pods in K8s are slow, run performance analysis"
 
 | Language | Frameworks | Profiler used |
 |----------|-----------|---------------|
-| Java | Spring Boot, Quarkus, Micronaut | JFR, async-profiler, JProfiler |
+| Java | Spring Boot, Quarkus, Micronaut | async-profiler (preferred), JFR, JProfiler |
 | Go | Gin, Fiber, Echo | pprof (built-in) |
 | Rust | Actix-web, Axum, Rocket | perf, flamegraph, tokio-console |
 | Python | FastAPI, Django, Flask | py-spy, memray, scalene |
@@ -262,6 +262,26 @@ A: The skill determines this automatically. If you have no target, it runs a bre
 ---
 
 ## Advanced Features
+
+### async-profiler Integration (Java — Preferred)
+
+async-profiler is the default profiler for Java services — production-safe with ~1-2% overhead. Generates interactive flame graphs for CPU, memory allocation, lock contention, and wall-clock profiling.
+
+```bash
+# Install (macOS)
+brew install async-profiler
+
+# Install (Linux)
+wget https://github.com/async-profiler/async-profiler/releases/latest/download/async-profiler-4.4-linux-x64.tar.gz
+```
+
+The skill automatically:
+1. Detects Java processes and attaches async-profiler
+2. Records CPU, alloc, and lock events during the load test window
+3. Generates interactive flame graph HTML files
+4. Summarizes top hotspots in the final HTML report
+
+The HTML report includes a dedicated **async-profiler Results** section showing top CPU methods, allocation hotspots, lock contention, and links to interactive flame graphs.
 
 ### Service Chain Discovery
 

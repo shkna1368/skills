@@ -696,6 +696,143 @@ perf record -g -p <PID> sleep 30 && perf report --stdio
 
 ---
 
+#### 🟧🔥 async-profiler Deep Dive (Java — Preferred Low-Overhead Profiler)
+
+async-profiler is the **recommended** Java profiler for production-safe profiling (~1-2% overhead). It uses perf_events (Linux) or DTrace (macOS) for accurate CPU sampling without safepoint bias, plus JVM TI for allocation and lock profiling.
+
+**Installation (OS-aware):**
+
+| OS | Install Method | Notes |
+|----|---------------|-------|
+| macOS | `brew install async-profiler` | Uses DTrace backend. Binary at `/opt/homebrew/bin/asprof` |
+| Linux (x64) | Download tarball | Uses perf_events. Requires `perf_event_paranoid ≤ 1` or `CAP_SYS_ADMIN` |
+| Linux (arm64) | Download tarball (aarch64) | Same as above |
+| Windows | ❌ Not natively supported | Use WSL2 (Linux) or Docker container |
+
+```bash
+# macOS
+brew install async-profiler
+# Verify: asprof --version
+
+# Linux x64
+wget https://github.com/async-profiler/async-profiler/releases/latest/download/async-profiler-4.4-linux-x64.tar.gz
+tar xzf async-profiler-*.tar.gz
+sudo cp build/bin/asprof /usr/local/bin/
+# Required: sysctl kernel.perf_event_paranoid=1 (or run as root)
+
+# Linux arm64 (e.g., AWS Graviton)
+wget https://github.com/async-profiler/async-profiler/releases/latest/download/async-profiler-4.4-linux-aarch64.tar.gz
+tar xzf async-profiler-*.tar.gz
+sudo cp build/bin/asprof /usr/local/bin/
+
+# Windows (via WSL2 — async-profiler does NOT run on native Windows)
+wsl --install  # if WSL2 not yet enabled
+# Inside WSL2: follow Linux x64 instructions above
+# Profile Java processes running inside WSL2 only
+
+# Docker (any OS — mount into container)
+docker run -v /path/to/asprof:/opt/asprof --cap-add SYS_PTRACE ...
+
+# K8s (ephemeral debug container — works from any OS)
+kubectl debug -it $POD --image=asprof/asprof:latest --target=app -- asprof -d 30 -f /tmp/flame.html 1
+```
+
+> ⚠️ **Windows users:** async-profiler has no native Windows build. Use one of:
+> 1. **WSL2** — run your Java service inside WSL2 and profile there
+> 2. **Docker Desktop** — run service in Linux container, mount asprof
+> 3. **JFR** — use JDK Flight Recorder as the alternative (works natively on Windows)
+
+**Profiling modes:**
+
+| Mode | Event | Use Case | Command |
+|------|-------|----------|---------|
+| CPU | `cpu` (default) | Hot methods, algorithmic issues | `asprof -d 30 -f cpu.html <PID>` |
+| Allocation | `alloc` | Memory pressure, GC causes | `asprof -d 30 -e alloc -f alloc.html <PID>` |
+| Lock | `lock` | Contention, synchronized bottlenecks | `asprof -d 30 -e lock -f lock.html <PID>` |
+| Wall-clock | `wall` | I/O waits, sleeping threads | `asprof -d 30 -e wall -f wall.html <PID>` |
+| Cache misses | `cache-misses` | Memory access patterns | `asprof -d 30 -e cache-misses -f cache.html <PID>` |
+| Context switches | `context-switches` | Thread scheduling overhead | `asprof -d 30 -e context-switches -f ctx.html <PID>` |
+
+**Complete profiling workflow (run all during load test):**
+
+```bash
+PID=$(pgrep -f "your-service")
+
+# 1. CPU flame graph (where time is spent)
+asprof -d 60 -f /tmp/asprof_cpu.html $PID
+
+# 2. Allocation flame graph (what creates GC pressure)
+asprof -d 60 -e alloc -f /tmp/asprof_alloc.html $PID
+
+# 3. Lock contention flame graph (what blocks threads)
+asprof -d 60 -e lock -f /tmp/asprof_lock.html $PID
+
+# 4. Wall-clock (includes I/O wait, sleep, off-CPU time)
+asprof -d 60 -e wall -f /tmp/asprof_wall.html $PID
+
+# Output formats: html (interactive flamegraph), jfr, collapsed, flamegraph
+asprof -d 60 -o jfr -f /tmp/asprof.jfr $PID       # JFR format (open in JMC)
+asprof -d 60 -o collapsed -f /tmp/asprof.txt $PID  # collapsed stacks (for custom tools)
+```
+
+**Advanced options:**
+
+```bash
+# Filter by specific threads (e.g., only Tomcat/Netty threads)
+asprof -d 30 -t -f /tmp/cpu_threads.html $PID
+
+# Include kernel frames (Linux only, requires perf_event_paranoid ≤ 1)
+asprof -d 30 --all-kernel -f /tmp/cpu_kernel.html $PID
+
+# Set sampling interval (default 10ms for CPU)
+asprof -d 30 -i 1ms -f /tmp/cpu_1ms.html $PID
+
+# Include JIT-compiled method addresses
+asprof -d 30 --dot -f /tmp/cpu_dot.html $PID
+
+# Live mode (no file, stream to console)
+asprof -d 10 --collapsed $PID | grep "hot.method"
+
+# Start/stop API (for precise timing with load test)
+asprof start -e cpu,alloc,lock $PID
+# ... run load test ...
+asprof stop -f /tmp/combined.html $PID
+```
+
+**K8s integration:**
+
+```bash
+POD=$(kubectl get pods -l app=order-service -n $NS -o jsonpath='{.items[0].metadata.name}')
+
+# If asprof is in the container image:
+kubectl exec $POD -n $NS -- asprof -d 30 -f /tmp/cpu.html 1
+kubectl cp $NS/$POD:/tmp/cpu.html ./asprof_cpu.html
+
+# If NOT in image, use debug container:
+kubectl debug -it $POD -n $NS --image=asprof/asprof:latest --target=app -- \
+  asprof -d 30 -f /tmp/cpu.html 1
+```
+
+**What to look for in async-profiler output:**
+
+| Flame Graph | Look For | Diagnosis |
+|-------------|----------|-----------|
+| CPU | Single tall tower (one method dominates) | CPU bottleneck — optimize that method |
+| CPU | Wide base (many methods, each small) | No single hotspot — architecture issue |
+| Alloc | Repeated alloc in loop → GC pressure | Reduce allocations (reuse, pooling) |
+| Lock | `jdk.internal.misc.Unsafe.park` dominates | Lock contention — reduce critical sections |
+| Wall | `Thread.sleep`, `Object.wait`, `IO` visible | I/O bound — add async/caching |
+
+**Integration with HTML report:**
+
+When async-profiler is used, the generated HTML report includes:
+- **Flame graph summary:** top 5 hottest methods from CPU profile
+- **Allocation hotspots:** top 5 allocating methods with bytes/s
+- **Lock contention:** top 5 contested locks with wait duration
+- **Links to interactive flame graphs** (generated .html files)
+
+---
+
 #### 🟦 Go — pprof (built-in)
 
 ```bash
@@ -1375,6 +1512,14 @@ Comparison table of actual metrics vs SLO targets:
 - Thread State Distribution — Blocked/Waiting/Runnable breakdown
 - GC Health — pause frequency, duration, memory leak indicators
 
+### 2b. async-profiler Results (if Java service profiled)
+
+- CPU Flame Graph Summary — top 5 hottest methods with % of samples
+- Allocation Hotspots — top 5 allocating call stacks with alloc rate (MB/s)
+- Lock Contention — top 5 contested monitors with total blocked time
+- Wall-Clock — top off-CPU stacks (I/O, sleep, park)
+- Links to generated interactive flame graph HTML files
+
 ### 3. Database & Infrastructure Deep Dive
 
 - Slow queries + indexing needs
@@ -1417,6 +1562,7 @@ After completing analysis, **always generate an HTML report file** (`report.html
 - Service chain table with color-coded language badges per service
 - Language distribution cards (if multi-language)
 - Latency percentile distribution
+- **async-profiler section (if Java service profiled):** CPU top methods table, allocation hotspots table, lock contention table, links to interactive flame graph files
 - Root cause findings with severity badges (if bottlenecks found)
 - Remediation section with collapsible before/after code (if fixes needed)
 - Next steps / recommendations
@@ -1624,10 +1770,14 @@ jpexport /tmp/snapshot.jps Monitors /tmp/monitors.xml
 # JFR (attach to running process)
 jcmd <PID> JFR.start name=perf duration=60s filename=/tmp/app.jfr settings=profile
 
-# async-profiler
-./asprof -d 30 -f flame.html <PID>
-./asprof -d 30 -e alloc -f alloc.html <PID>
-./asprof -d 30 -e lock -f lock.html <PID>
+# async-profiler (low-overhead, production-safe)
+asprof -d 30 -f flame.html <PID>                       # CPU flame graph
+asprof -d 30 -e alloc -f alloc.html <PID>              # Allocation flame graph
+asprof -d 30 -e lock -f lock.html <PID>                # Lock contention flame graph
+asprof -d 30 -e wall -f wall.html <PID>                # Wall-clock (includes I/O waits)
+asprof start -e cpu,alloc,lock <PID>                   # Start multi-event recording
+asprof stop -f combined.html <PID>                     # Stop and dump combined profile
+asprof -d 30 -o jfr -f profile.jfr <PID>              # Output as JFR (open in JMC)
 
 # Thread dump (two alternatives)
 jcmd <PID> Thread.print > threads.txt
