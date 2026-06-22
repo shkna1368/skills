@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="auto">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Energy Report — template-all-microservice</title>
+<style>
+:root {
+    --bg: #ffffff; --bg2: #f8fafc; --fg: #1e293b; --fg2: #475569;
+    --border: #e2e8f0; --card: #ffffff; --card-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    --accent: #3b82f6; --accent2: #6366f1;
+    --sev-critical: #dc2626; --sev-high: #ea580c; --sev-medium: #ca8a04; --sev-low: #65a30d;
+    --bar-bg: #e2e8f0; --energy-bg: #eff6ff;
+}
+[data-theme="dark"] {
+    --bg: #0f172a; --bg2: #1e293b; --fg: #f1f5f9; --fg2: #94a3b8;
+    --border: #334155; --card: #1e293b; --card-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    --accent: #60a5fa; --accent2: #818cf8;
+    --sev-critical: #f87171; --sev-high: #fb923c; --sev-medium: #fbbf24; --sev-low: #a3e635;
+    --bar-bg: #334155; --energy-bg: #1e3a5f;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--fg); line-height: 1.6; }
+.container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
+header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+h1 { font-size: 1.5rem; font-weight: 700; }
+h2 { font-size: 1.25rem; margin: 2rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+h3 { font-size: 1rem; margin: 1.5rem 0 0.75rem; color: var(--fg2); }
+.theme-toggle { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 1rem; cursor: pointer; color: var(--fg); font-size: 0.875rem; }
+.theme-toggle:hover { border-color: var(--accent); }
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.summary-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; text-align: center; box-shadow: var(--card-shadow); }
+.grade-card { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; }
+.grade { font-size: 3rem; font-weight: 800; }
+.score { font-size: 1.25rem; opacity: 0.9; }
+.stat-value { font-size: 2rem; font-weight: 700; color: var(--accent); }
+.stat-label { font-size: 0.875rem; color: var(--fg2); margin-top: 0.25rem; }
+.metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; margin: 1rem 0; }
+.metric-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; text-align: center; }
+.metric-card.energy { background: var(--energy-bg); border-color: var(--accent); }
+.metric-value { font-size: 1.25rem; font-weight: 700; color: var(--fg); }
+.metric-label { font-size: 0.75rem; color: var(--fg2); margin-top: 0.25rem; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.875rem; }
+th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
+th { background: var(--bg2); font-weight: 600; position: sticky; top: 0; }
+tr:hover { background: var(--bg2); }
+.badge { padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.7rem; font-weight: 700; color: white; }
+.sev-critical { background: var(--sev-critical); }
+.sev-high { background: var(--sev-high); }
+.sev-medium { background: var(--sev-medium); }
+.sev-low { background: var(--sev-low); }
+.file-path { font-family: monospace; font-size: 0.8rem; color: var(--fg2); word-break: break-all; }
+.bar-row { display: flex; align-items: center; gap: 0.75rem; margin: 0.4rem 0; }
+.bar-label { width: 140px; font-size: 0.8rem; text-align: right; color: var(--fg2); }
+.bar-track { flex: 1; height: 20px; background: var(--bar-bg); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 4px; transition: width 0.5s; }
+.bar-value { width: 30px; font-size: 0.8rem; font-weight: 600; }
+.note { font-size: 0.8rem; color: var(--fg2); font-style: italic; margin: 0.5rem 0; }
+.section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; box-shadow: var(--card-shadow); }
+.timestamp { font-size: 0.75rem; color: var(--fg2); }
+.empty { text-align: center; padding: 2rem; color: var(--fg2); }
+@media (max-width: 768px) {
+    .container { padding: 1rem 0.5rem; }
+    .summary { grid-template-columns: 1fr 1fr; }
+    .metrics-grid { grid-template-columns: 1fr 1fr; }
+    table { font-size: 0.75rem; }
+    th, td { padding: 0.5rem; }
+    .bar-label { width: 100px; }
+}
+@media (max-width: 480px) {
+    .summary { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: 1fr; }
+    header { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+    <div>
+        <h1>⚡ Energy Consumption Report</h1>
+        <p class="timestamp">template-all-microservice — Generated 2026-06-22 11:24:00 UTC</p>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓 Toggle Theme</button>
+</header>
+
+<div class="summary">
+    <div class="summary-card grade-card">
+        <div class="grade">D</div>
+        <div class="score">54/100 →</div>
+        <div class="stat-label" style="color:rgba(255,255,255,0.8)">Combined Score</div>
+    </div>
+    <div class="summary-card">
+        <div class="stat-value">🌱 6.8751kg</div>
+        <div class="stat-label">CO₂/month (400g/kWh)</div>
+    </div>
+    <div class="summary-card">
+        <div class="stat-value">💰 $0.8594</div>
+        <div class="stat-label">Monthly ($10.31/yr)</div>
+    </div>
+    <div class="summary-card">
+        <div class="stat-value">62</div>
+        <div class="stat-label">Static Score (40%)</div>
+    </div>
+    <div class="summary-card">
+        <div class="stat-value">50</div>
+        <div class="stat-label">Runtime Score (60%)</div>
+    </div>
+    <div class="summary-card">
+        <div class="stat-value" style="color:var(--sev-critical)">0</div>
+        <div class="stat-label">Critical</div>
+    </div>
+    <div class="summary-card">
+        <div class="stat-value" style="color:var(--sev-high)">7</div>
+        <div class="stat-label">High</div>
+    </div>
+</div>
+
+<div class="section"><h2>🔥 RUNTIME — Load Test Results</h2>
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-value">hey</div>
+            <div class="metric-label">Tool</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">306.1</div>
+            <div class="metric-label">Requests/sec</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">10</div>
+            <div class="metric-label">Total Requests</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">0.0163</div>
+            <div class="metric-label">Avg Latency</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">10s</div>
+            <div class="metric-label">Duration</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">5</div>
+            <div class="metric-label">Concurrency</div>
+        </div>
+    </div>
+    <p class="note">Endpoint: http://localhost:8000/api/checkout</p>
+    </div>
+
+<div class="section"><h2>🌍 Carbon Region Comparison</h2>
+    <p class="note">Same workload deployed to different regions — showing CO₂ and cost impact.</p>
+    <div class="metrics-grid">
+        <div class="metric-card" style="border-color:#22c55e">
+            <div class="metric-value" style="color:#22c55e">🏆 Stockholm</div>
+            <div class="metric-label">AWS eu-north-1 — 8g CO₂/kWh — $0.9453/mo</div>
+        </div>
+        <div class="metric-card" style="border-color:#ef4444">
+            <div class="metric-value" style="color:#ef4444">⚠️ Tokyo</div>
+            <div class="metric-label">AWS ap-northeast-1 — 463g CO₂/kWh — $1.0656/mo</div>
+        </div>
+    </div>
+    <table><thead><tr><th>Provider</th><th>Region</th><th>Carbon (g/kWh)</th><th>CO₂/month (kg)</th><th>Cost/month</th></tr></thead><tbody><tr style="background:var(--energy-bg)"><td>AWS</td><td>Stockholm (eu-north-1)</td><td>8</td><td>0.1375</td><td>$0.9453</td></tr><tr style="background:var(--energy-bg)"><td>AZURE</td><td>Sweden Central (swedencentral)</td><td>8</td><td>0.1375</td><td>$0.8938</td></tr><tr style="background:var(--energy-bg)"><td>AWS</td><td>Canada (ca-central-1)</td><td>26</td><td>0.4469</td><td>$0.8250</td></tr><tr style="background:var(--energy-bg)"><td>AZURE</td><td>Canada Central (canadacentral)</td><td>26</td><td>0.4469</td><td>$0.8594</td></tr><tr style="background:var(--energy-bg)"><td>GCP</td><td>Montreal (northamerica-northeast1)</td><td>26</td><td>0.4469</td><td>$0.7734</td></tr><tr style="background:var(--energy-bg)"><td>GCP</td><td>Finland (europe-north1)</td><td>71</td><td>1.2203</td><td>$0.9110</td></tr><tr><td>AWS</td><td>Oregon (us-west-2)</td><td>117</td><td>2.0110</td><td>$0.7391</td></tr><tr><td>AZURE</td><td>West US 2 (westus2)</td><td>117</td><td>2.0110</td><td>$0.7906</td></tr><tr><td>GCP</td><td>Oregon (us-west1)</td><td>117</td><td>2.0110</td><td>$0.7219</td></tr><tr><td>GCP</td><td>Belgium (europe-west1)</td><td>148</td><td>2.5438</td><td>$0.8594</td></tr><tr><td>AWS</td><td>Ireland (eu-west-1)</td><td>296</td><td>5.0876</td><td>$0.8938</td></tr><tr><td>AZURE</td><td>North Europe (Ireland) (northeurope)</td><td>296</td><td>5.0876</td><td>$0.9281</td></tr><tr><td>GCP</td><td>Netherlands (europe-west4)</td><td>328</td><td>5.6376</td><td>$0.9453</td></tr><tr><td>AWS</td><td>Frankfurt (eu-central-1)</td><td>338</td><td>5.8095</td><td>$0.9969</td></tr><tr><td>AZURE</td><td>Germany West (germanywestcentral)</td><td>338</td><td>5.8095</td><td>$1.0313</td></tr><tr><td>AWS</td><td>N. Virginia (us-east-1)</td><td>379</td><td>6.5142</td><td>$0.7734</td></tr><tr><td>AZURE</td><td>East US (eastus)</td><td>379</td><td>6.5142</td><td>$0.8250</td></tr><tr><td>GCP</td><td>South Carolina (us-east1)</td><td>379</td><td>6.5142</td><td>$0.7563</td></tr><tr><td>CUSTOM</td><td>Global Average (default)</td><td>400</td><td>6.8751</td><td>$1.7188</td></tr><tr><td>AWS</td><td>Singapore (ap-southeast-1)</td><td>408</td><td>7.0126</td><td>$1.0313</td></tr><tr><td>AZURE</td><td>Southeast Asia (southeastasia)</td><td>408</td><td>7.0126</td><td>$0.9969</td></tr><tr><td>GCP</td><td>Singapore (asia-southeast1)</td><td>408</td><td>7.0126</td><td>$0.9969</td></tr><tr><td>AWS</td><td>Tokyo (ap-northeast-1)</td><td>463</td><td>7.9579</td><td>$1.0656</td></tr></tbody></table><p class="note"><strong>Recommendation:</strong> Deploy to <strong>Stockholm (AWS eu-north-1)</strong> for 98% less CO₂ emissions.</p></div>
+
+<div class='section'><h2>🏃 RUNTIME ANALYSIS — Measured Under Load</h2>
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-value">10.07s</div>
+            <div class="metric-label">Startup Time</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">126.5%</div>
+            <div class="metric-label">Total CPU Usage</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">8234MB</div>
+            <div class="metric-label">Total Memory</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">54</div>
+            <div class="metric-label">Containers Running</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">272.0MB</div>
+            <div class="metric-label">Network In</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">276.2MB</div>
+            <div class="metric-label">Network Out</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">1448MB</div>
+            <div class="metric-label">Block I/O Read</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">2385MB</div>
+            <div class="metric-label">Block I/O Write</div>
+        </div>
+    </div>
+    <h3>Energy Estimate</h3>
+    <div class="metrics-grid">
+        <div class="metric-card energy">
+            <div class="metric-value">240.39J</div>
+            <div class="metric-label">Total Estimated Energy</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">191.06J</div>
+            <div class="metric-label">CPU Energy</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">30.16J</div>
+            <div class="metric-label">Memory Energy</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">19.16J</div>
+            <div class="metric-label">I/O Energy</div>
+        </div>
+    </div>
+    <p class="note">Energy measured UNDER LOAD (5 concurrent, 10s). TDP model: 15W CPU, 0.3725W/GB RAM, 5mJ/MB I/O.</p><h3>Per-Service Energy &amp; Resources</h3><div class="service-table"><table><thead><tr><th>Service</th><th>CPU %</th><th>Memory</th><th>Energy (J)</th><th>Memory Bar</th></tr></thead><tbody><tr><td>oracle-db</td><td>0.65%</td><td>2491MB</td><td>10.11J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:100%"></div></div></td></tr><tr><td>kafka</td><td>54.67%</td><td>597MB</td><td>84.77J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:24%"></div></div></td></tr><tr><td>mysql-db</td><td>0.16%</td><td>505MB</td><td>2.09J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:20%"></div></div></td></tr><tr><td>user-service</td><td>0.04%</td><td>493MB</td><td>1.86J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:20%"></div></div></td></tr><tr><td>modest_northcutt</td><td>0.02%</td><td>391MB</td><td>1.46J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:16%"></div></div></td></tr><tr><td>wizardly_lamport</td><td>0.01%</td><td>391MB</td><td>1.45J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:16%"></div></div></td></tr><tr><td>zealous_kare</td><td>0.02%</td><td>387MB</td><td>1.45J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:16%"></div></div></td></tr><tr><td>product-service</td><td>0.01%</td><td>248MB</td><td>0.93J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:10%"></div></div></td></tr><tr><td>notification-service</td><td>0.00%</td><td>114MB</td><td>0.42J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:5%"></div></div></td></tr><tr><td>coupon-service</td><td>22.98%</td><td>113MB</td><td>35.12J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:5%"></div></div></td></tr><tr><td>vigorous_merkle</td><td>0.00%</td><td>108MB</td><td>0.4J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:4%"></div></div></td></tr><tr><td>silly_lumiere</td><td>0.00%</td><td>108MB</td><td>0.4J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:4%"></div></div></td></tr><tr><td>vigorous_cori</td><td>0.00%</td><td>108MB</td><td>0.4J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:4%"></div></div></td></tr><tr><td>auth-service</td><td>0.26%</td><td>91MB</td><td>0.73J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:4%"></div></div></td></tr><tr><td>analytics-service</td><td>0.00%</td><td>86MB</td><td>0.32J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:3%"></div></div></td></tr><tr><td>postgres-db</td><td>0.00%</td><td>80MB</td><td>0.29J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:3%"></div></div></td></tr><tr><td>trusting_saha</td><td>0.00%</td><td>70MB</td><td>0.26J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:3%"></div></div></td></tr><tr><td>bold_kapitsa</td><td>0.00%</td><td>70MB</td><td>0.26J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:3%"></div></div></td></tr><tr><td>condescending_tharp</td><td>0.00%</td><td>70MB</td><td>0.26J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:3%"></div></div></td></tr><tr><td>cart-service</td><td>0.01%</td><td>66MB</td><td>0.26J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:3%"></div></div></td></tr><tr><td>order-service</td><td>22.58%</td><td>64MB</td><td>34.34J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:3%"></div></div></td></tr><tr><td>review-service</td><td>0.00%</td><td>62MB</td><td>0.23J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:2%"></div></div></td></tr><tr><td>suspicious_grothendieck</td><td>0.00%</td><td>59MB</td><td>0.22J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:2%"></div></div></td></tr><tr><td>heuristic_hawking</td><td>0.00%</td><td>59MB</td><td>0.22J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:2%"></div></div></td></tr><tr><td>vigorous_sanderson</td><td>0.00%</td><td>59MB</td><td>0.22J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:2%"></div></div></td></tr><tr><td>stupefied_borg</td><td>0.00%</td><td>59MB</td><td>0.22J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:2%"></div></div></td></tr><tr><td>frosty_knuth</td><td>0.00%</td><td>59MB</td><td>0.22J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:2%"></div></div></td></tr><tr><td>jovial_lederberg</td><td>0.00%</td><td>59MB</td><td>0.22J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:2%"></div></div></td></tr><tr><td>clever_greider</td><td>0.00%</td><td>58MB</td><td>0.21J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:2%"></div></div></td></tr><tr><td>strange_dijkstra</td><td>0.00%</td><td>58MB</td><td>0.21J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:2%"></div></div></td></tr><tr><td>mystifying_solomon</td><td>0.00%</td><td>58MB</td><td>0.21J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:2%"></div></div></td></tr><tr><td>wizardly_lederberg</td><td>0.00%</td><td>58MB</td><td>0.21J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:2%"></div></div></td></tr><tr><td>busy_sinoussi</td><td>0.00%</td><td>57MB</td><td>0.21J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:2%"></div></div></td></tr><tr><td>vigilant_tharp</td><td>0.00%</td><td>57MB</td><td>0.21J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:2%"></div></div></td></tr><tr><td>unruffled_hofstadter</td><td>0.00%</td><td>55MB</td><td>0.2J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:2%"></div></div></td></tr><tr><td>nervous_heisenberg</td><td>0.00%</td><td>55MB</td><td>0.2J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:2%"></div></div></td></tr><tr><td>adoring_heisenberg</td><td>0.00%</td><td>54MB</td><td>0.2J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:2%"></div></div></td></tr><tr><td>compassionate_feynman</td><td>0.00%</td><td>54MB</td><td>0.2J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:2%"></div></div></td></tr><tr><td>laughing_nightingale</td><td>0.00%</td><td>54MB</td><td>0.2J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:2%"></div></div></td></tr><tr><td>infallible_roentgen</td><td>0.00%</td><td>54MB</td><td>0.2J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:2%"></div></div></td></tr><tr><td>stoic_burnell</td><td>0.00%</td><td>54MB</td><td>0.2J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:2%"></div></div></td></tr><tr><td>quizzical_heisenberg</td><td>0.00%</td><td>54MB</td><td>0.2J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:2%"></div></div></td></tr><tr><td>cranky_hertz</td><td>0.00%</td><td>54MB</td><td>0.2J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:2%"></div></div></td></tr><tr><td>kind_cray</td><td>0.00%</td><td>54MB</td><td>0.2J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:2%"></div></div></td></tr><tr><td>kind_curran</td><td>0.00%</td><td>54MB</td><td>0.2J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:2%"></div></div></td></tr><tr><td>charming_euclid</td><td>0.00%</td><td>54MB</td><td>0.2J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:2%"></div></div></td></tr><tr><td>warehouse-service</td><td>0.00%</td><td>30MB</td><td>0.11J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:1%"></div></div></td></tr><tr><td>gateway-service</td><td>0.01%</td><td>26MB</td><td>0.11J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:1%"></div></div></td></tr><tr><td>inventory-service</td><td>0.00%</td><td>25MB</td><td>0.09J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:1%"></div></div></td></tr><tr><td>payment-service</td><td>24.82%</td><td>23MB</td><td>37.58J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:1%"></div></div></td></tr><tr><td>shipping-service</td><td>0.00%</td><td>19MB</td><td>0.07J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:1%"></div></div></td></tr><tr><td>report-service</td><td>0.01%</td><td>16MB</td><td>0.08J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:1%"></div></div></td></tr><tr><td>search-service</td><td>0.00%</td><td>14MB</td><td>0.05J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:1%"></div></div></td></tr><tr><td>redis</td><td>0.24%</td><td>13MB</td><td>0.41J</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:1%"></div></div></td></tr></tbody></table></div><h3>Energy Per Request</h3>
+            <div class="metrics-grid">
+                <div class="metric-card energy">
+                    <div class="metric-value">24039.00 mJ</div>
+                    <div class="metric-label">Energy per Request</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">10</div>
+                    <div class="metric-label">Total Requests</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">240.4 J</div>
+                    <div class="metric-label">Total Energy (during test)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">152 MB</div>
+                    <div class="metric-label">Avg Memory / Service</div>
+                </div>
+            </div>
+    <h3>Project Metrics</h3>
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-value">89</div>
+            <div class="metric-label">Source Files</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">1,912</div>
+            <div class="metric-label">Total Lines</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">3577MB</div>
+            <div class="metric-label">Disk Usage</div>
+        </div>
+    </div></div>
+
+<div class="section"><h2>🐳 CONTAINER ANALYSIS — Docker Containers</h2>
+    <div class="metrics-grid">
+        <div class="metric-card energy">
+            <div class="metric-value">84.24J</div>
+            <div class="metric-label">Total Energy (15s)</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">5.62 Wh</div>
+            <div class="metric-label">Energy per Hour</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">21</div>
+            <div class="metric-label">Total Dockers</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">4520MB</div>
+            <div class="metric-label">Total Memory</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">22.5%</div>
+            <div class="metric-label">Total CPU</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">5</div>
+            <div class="metric-label">Samples Taken</div>
+        </div>
+    </div>
+    <h3>Per-Container Energy Breakdown</h3>
+    <table><thead><tr><th>Name</th><th>CPU %</th><th>Memory</th><th>Energy (J)</th><th>CPU (J)</th><th>Mem (J)</th></tr></thead><tbody><tr><td>template-all-microservice-kafka-1</td><td>16.25%</td><td>446MB</td><td><strong>39.75</strong></td><td>36.56</td><td>2.43</td></tr><tr><td>template-all-microservice-oracle-db-1</td><td>1.55%</td><td>2468MB</td><td><strong>20.71</strong></td><td>3.5</td><td>13.47</td></tr><tr><td>template-all-microservice-coupon-service-1</td><td>1.95%</td><td>67MB</td><td><strong>5.62</strong></td><td>4.39</td><td>0.36</td></tr><tr><td>template-all-microservice-order-service-1</td><td>2.02%</td><td>39MB</td><td><strong>5.44</strong></td><td>4.54</td><td>0.21</td></tr><tr><td>template-all-microservice-mysql-db-1</td><td>0.15%</td><td>490MB</td><td><strong>3.67</strong></td><td>0.33</td><td>2.68</td></tr><tr><td>template-all-microservice-user-service-1</td><td>0.07%</td><td>294MB</td><td><strong>2.14</strong></td><td>0.15</td><td>1.6</td></tr><tr><td>template-all-microservice-product-service-1</td><td>0.01%</td><td>214MB</td><td><strong>1.52</strong></td><td>0.03</td><td>1.17</td></tr><tr><td>template-all-microservice-auth-service-1</td><td>0.10%</td><td>81MB</td><td><strong>0.91</strong></td><td>0.23</td><td>0.44</td></tr><tr><td>template-all-microservice-notification-service-1</td><td>0.00%</td><td>79MB</td><td><strong>0.71</strong></td><td>0.0</td><td>0.43</td></tr><tr><td>template-all-microservice-redis-1</td><td>0.23%</td><td>13MB</td><td><strong>0.64</strong></td><td>0.51</td><td>0.07</td></tr><tr><td>template-all-microservice-postgres-db-1</td><td>0.00%</td><td>66MB</td><td><strong>0.54</strong></td><td>0.0</td><td>0.36</td></tr><tr><td>template-all-microservice-cart-service-1</td><td>0.01%</td><td>64MB</td><td><strong>0.51</strong></td><td>0.02</td><td>0.35</td></tr><tr><td>template-all-microservice-analytics-service-1</td><td>0.00%</td><td>46MB</td><td><strong>0.39</strong></td><td>0.0</td><td>0.25</td></tr><tr><td>template-all-microservice-payment-service-1</td><td>0.10%</td><td>15MB</td><td><strong>0.34</strong></td><td>0.22</td><td>0.08</td></tr><tr><td>template-all-microservice-review-service-1</td><td>0.00%</td><td>46MB</td><td><strong>0.32</strong></td><td>0.01</td><td>0.25</td></tr><tr><td>template-all-microservice-report-service-1</td><td>0.08%</td><td>14MB</td><td><strong>0.29</strong></td><td>0.17</td><td>0.08</td></tr><tr><td>template-all-microservice-gateway-service-1</td><td>0.01%</td><td>19MB</td><td><strong>0.2</strong></td><td>0.02</td><td>0.11</td></tr><tr><td>template-all-microservice-inventory-service-1</td><td>0.00%</td><td>19MB</td><td><strong>0.19</strong></td><td>0.0</td><td>0.1</td></tr><tr><td>template-all-microservice-shipping-service-1</td><td>0.00%</td><td>13MB</td><td><strong>0.13</strong></td><td>0.0</td><td>0.07</td></tr><tr><td>template-all-microservice-search-service-1</td><td>0.00%</td><td>14MB</td><td><strong>0.11</strong></td><td>0.0</td><td>0.07</td></tr><tr><td>template-all-microservice-warehouse-service-1</td><td>0.00%</td><td>14MB</td><td><strong>0.11</strong></td><td>0.0</td><td>0.07</td></tr></tbody></table></div>
+
+<div class="section">
+<h2>🔍 STATIC ANALYSIS — Code Pattern Scan</h2>
+<h3>Category Breakdown</h3><div class="bar-row">
+            <span class="bar-label">no-pooling</span>
+            <div class="bar-track"><div class="bar-fill" style="width:100.0%"></div></div>
+            <span class="bar-value">16</span>
+        </div>
+<div class="bar-row">
+            <span class="bar-label">no-compression</span>
+            <div class="bar-track"><div class="bar-fill" style="width:68.75%"></div></div>
+            <span class="bar-value">11</span>
+        </div>
+<div class="bar-row">
+            <span class="bar-label">thread-waste</span>
+            <div class="bar-track"><div class="bar-fill" style="width:50.0%"></div></div>
+            <span class="bar-value">8</span>
+        </div>
+<div class="bar-row">
+            <span class="bar-label">io-in-loop</span>
+            <div class="bar-track"><div class="bar-fill" style="width:31.25%"></div></div>
+            <span class="bar-value">5</span>
+        </div>
+<div class="bar-row">
+            <span class="bar-label">n-plus-1</span>
+            <div class="bar-track"><div class="bar-fill" style="width:12.5%"></div></div>
+            <span class="bar-value">2</span>
+        </div>
+<div class="bar-row">
+            <span class="bar-label">network-waste</span>
+            <div class="bar-track"><div class="bar-fill" style="width:6.25%"></div></div>
+            <span class="bar-value">1</span>
+        </div>
+
+<h3>Findings</h3><div class='table-wrap'><table><thead><tr><th>Severity</th><th>Category</th><th>Location</th><th>Message</th></tr></thead><tbody><tr>
+            <td><span class="badge sev-medium">MEDIUM</span></td>
+            <td>thread-waste</td>
+            <td class="file-path">report-service/kafka/consumer.go:26</td>
+            <td>Thread/goroutine created per request — consider pooling</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-low">LOW</span></td>
+            <td>no-compression</td>
+            <td class="file-path">report-service/handlers/reports.go:24</td>
+            <td>HTTP response without compression — consider gzip/brotli</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-high">HIGH</span></td>
+            <td>io-in-loop</td>
+            <td class="file-path">review-service/reviews/views.py:34</td>
+            <td>I/O operation likely inside loop — consider batching</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-low">LOW</span></td>
+            <td>no-compression</td>
+            <td class="file-path">notification-service/src/logger.ts:5</td>
+            <td>HTTP response without compression — consider gzip/brotli</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-medium">MEDIUM</span></td>
+            <td>no-pooling</td>
+            <td class="file-path">shipping-service/db/mysql.go:19</td>
+            <td>New connection created — ensure connection pooling is configured</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-medium">MEDIUM</span></td>
+            <td>thread-waste</td>
+            <td class="file-path">shipping-service/main.go:22</td>
+            <td>Thread/goroutine created per request — consider pooling</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-medium">MEDIUM</span></td>
+            <td>no-pooling</td>
+            <td class="file-path">payment-service/src/db.rs:4</td>
+            <td>New connection created — ensure connection pooling is configured</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-medium">MEDIUM</span></td>
+            <td>no-pooling</td>
+            <td class="file-path">payment-service/src/db.rs:7</td>
+            <td>New connection created — ensure connection pooling is configured</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-medium">MEDIUM</span></td>
+            <td>no-pooling</td>
+            <td class="file-path">payment-service/src/main.rs:24</td>
+            <td>New connection created — ensure connection pooling is configured</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-medium">MEDIUM</span></td>
+            <td>thread-waste</td>
+            <td class="file-path">payment-service/src/main.rs:28</td>
+            <td>Thread/goroutine created per request — consider pooling</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-low">LOW</span></td>
+            <td>no-compression</td>
+            <td class="file-path">payment-service/src/main.rs:13</td>
+            <td>HTTP response without compression — consider gzip/brotli</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-low">LOW</span></td>
+            <td>no-compression</td>
+            <td class="file-path">gateway-service/handlers/graphql.go:15</td>
+            <td>HTTP response without compression — consider gzip/brotli</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-medium">MEDIUM</span></td>
+            <td>network-waste</td>
+            <td class="file-path">gateway-service/handlers/checkout.go:12</td>
+            <td>HTTP client created per request — reuse connections with keep-alive</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-low">LOW</span></td>
+            <td>no-compression</td>
+            <td class="file-path">loadtest.js:19</td>
+            <td>HTTP response without compression — consider gzip/brotli</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-high">HIGH</span></td>
+            <td>n-plus-1</td>
+            <td class="file-path">search-service/src/grpc.rs:14</td>
+            <td>Potential N+1 query — use batch/bulk operations</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-medium">MEDIUM</span></td>
+            <td>no-pooling</td>
+            <td class="file-path">search-service/src/db.rs:4</td>
+            <td>New connection created — ensure connection pooling is configured</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-medium">MEDIUM</span></td>
+            <td>no-pooling</td>
+            <td class="file-path">search-service/src/db.rs:7</td>
+            <td>New connection created — ensure connection pooling is configured</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-medium">MEDIUM</span></td>
+            <td>no-pooling</td>
+            <td class="file-path">search-service/src/main.rs:23</td>
+            <td>New connection created — ensure connection pooling is configured</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-medium">MEDIUM</span></td>
+            <td>thread-waste</td>
+            <td class="file-path">search-service/src/main.rs:26</td>
+            <td>Thread/goroutine created per request — consider pooling</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-medium">MEDIUM</span></td>
+            <td>thread-waste</td>
+            <td class="file-path">search-service/src/main.rs:29</td>
+            <td>Thread/goroutine created per request — consider pooling</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-high">HIGH</span></td>
+            <td>io-in-loop</td>
+            <td class="file-path">analytics-service/src/kafka-consumer.js:24</td>
+            <td>I/O operation likely inside loop — consider batching</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-medium">MEDIUM</span></td>
+            <td>no-pooling</td>
+            <td class="file-path">analytics-service/src/kafka-consumer.js:15</td>
+            <td>New connection created — ensure connection pooling is configured</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-low">LOW</span></td>
+            <td>no-compression</td>
+            <td class="file-path">analytics-service/src/logger.js:5</td>
+            <td>HTTP response without compression — consider gzip/brotli</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-high">HIGH</span></td>
+            <td>io-in-loop</td>
+            <td class="file-path">analytics-service/src/index.js:11</td>
+            <td>I/O operation likely inside loop — consider batching</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-high">HIGH</span></td>
+            <td>io-in-loop</td>
+            <td class="file-path">analytics-service/src/index.js:20</td>
+            <td>I/O operation likely inside loop — consider batching</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-low">LOW</span></td>
+            <td>no-compression</td>
+            <td class="file-path">analytics-service/src/index.js:12</td>
+            <td>HTTP response without compression — consider gzip/brotli</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-low">LOW</span></td>
+            <td>no-compression</td>
+            <td class="file-path">analytics-service/src/index.js:14</td>
+            <td>HTTP response without compression — consider gzip/brotli</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-low">LOW</span></td>
+            <td>no-compression</td>
+            <td class="file-path">analytics-service/src/index.js:21</td>
+            <td>HTTP response without compression — consider gzip/brotli</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-medium">MEDIUM</span></td>
+            <td>no-pooling</td>
+            <td class="file-path">warehouse-service/src/db.rs:4</td>
+            <td>New connection created — ensure connection pooling is configured</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-medium">MEDIUM</span></td>
+            <td>no-pooling</td>
+            <td class="file-path">warehouse-service/src/db.rs:7</td>
+            <td>New connection created — ensure connection pooling is configured</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-medium">MEDIUM</span></td>
+            <td>no-pooling</td>
+            <td class="file-path">warehouse-service/src/main.rs:25</td>
+            <td>New connection created — ensure connection pooling is configured</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-medium">MEDIUM</span></td>
+            <td>thread-waste</td>
+            <td class="file-path">warehouse-service/src/main.rs:27</td>
+            <td>Thread/goroutine created per request — consider pooling</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-medium">MEDIUM</span></td>
+            <td>thread-waste</td>
+            <td class="file-path">warehouse-service/src/main.rs:29</td>
+            <td>Thread/goroutine created per request — consider pooling</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-medium">MEDIUM</span></td>
+            <td>no-pooling</td>
+            <td class="file-path">coupon-service/Program.cs:17</td>
+            <td>New connection created — ensure connection pooling is configured</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-medium">MEDIUM</span></td>
+            <td>no-pooling</td>
+            <td class="file-path">coupon-service/Program.cs:29</td>
+            <td>New connection created — ensure connection pooling is configured</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-medium">MEDIUM</span></td>
+            <td>no-pooling</td>
+            <td class="file-path">cart-service/app/database.py:8</td>
+            <td>New connection created — ensure connection pooling is configured</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-low">LOW</span></td>
+            <td>no-compression</td>
+            <td class="file-path">cart-service/app/routes.py:22</td>
+            <td>HTTP response without compression — consider gzip/brotli</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-low">LOW</span></td>
+            <td>no-compression</td>
+            <td class="file-path">soak.js:20</td>
+            <td>HTTP response without compression — consider gzip/brotli</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-high">HIGH</span></td>
+            <td>io-in-loop</td>
+            <td class="file-path">user-service/src/main/java/com/microservice/user/controller/UserController.java:28</td>
+            <td>I/O operation likely inside loop — consider batching</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-medium">MEDIUM</span></td>
+            <td>no-pooling</td>
+            <td class="file-path">auth-service/app/database.py:5</td>
+            <td>New connection created — ensure connection pooling is configured</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-high">HIGH</span></td>
+            <td>n-plus-1</td>
+            <td class="file-path">auth-service/app/main.py:14</td>
+            <td>Potential N+1 query — use batch/bulk operations</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-medium">MEDIUM</span></td>
+            <td>no-pooling</td>
+            <td class="file-path">inventory-service/db/postgres.go:19</td>
+            <td>New connection created — ensure connection pooling is configured</td>
+        </tr>
+<tr>
+            <td><span class="badge sev-medium">MEDIUM</span></td>
+            <td>thread-waste</td>
+            <td class="file-path">inventory-service/main.go:22</td>
+            <td>Thread/goroutine created per request — consider pooling</td>
+        </tr>
+</tbody></table></div>
+</div>
+
+<div class="section"><h2>🎉 Fun Facts — What This Energy Could Power</h2><p class="note">Your monthly energy: <strong>17187.8 Wh</strong> (17.188 kWh) — continuous power draw: <strong>23.9 W</strong></p><div class="metrics-grid"><div class="metric-card"><div class="metric-label" style="font-size:0.95rem">📱 Charge <strong>1719 smartphones</strong></div></div><div class="metric-card"><div class="metric-label" style="font-size:0.95rem">☕ Boil <strong>172 cups of tea</strong></div></div><div class="metric-card"><div class="metric-label" style="font-size:0.95rem">🎬 Stream <strong>344 hours of Netflix</strong></div></div><div class="metric-card"><div class="metric-label" style="font-size:0.95rem">🚗 Drive an EV <strong>114.6 km</strong></div></div><div class="metric-card"><div class="metric-label" style="font-size:0.95rem">🐹 Requires <strong>48 hamsters</strong> running on wheels 24/7</div></div><div class="metric-card"><div class="metric-label" style="font-size:0.95rem">🏃 Equivalent to running <strong>49 marathons</strong></div></div><div class="metric-card"><div class="metric-label" style="font-size:0.95rem">🚀 <strong>73.23 milliseconds</strong> of SpaceX Falcon 9 thrust</div></div><div class="metric-card"><div class="metric-label" style="font-size:0.95rem">🍕 Run <strong>0.01 pizza ovens</strong> simultaneously</div></div><div class="metric-card"><div class="metric-label" style="font-size:0.95rem">🎮 <strong>86 hours</strong> of PlayStation gaming</div></div><div class="metric-card"><div class="metric-label" style="font-size:0.95rem">🌮 Microwave <strong>521 burritos</strong></div></div><div class="metric-card"><div class="metric-label" style="font-size:0.95rem">💡 Power an LED bulb for <strong>72 days</strong></div></div><div class="metric-card"><div class="metric-label" style="font-size:0.95rem">🌳 Need <strong>3.8 trees</strong> to offset yearly CO₂</div></div></div></div>
+
+<div class="section"><h2>🔥 Wall of Shame — Roasting Your Services</h2><ul style="padding-left:1.5rem; font-size:0.95rem; line-height:2;"><li>🏛️ <strong>oracle-db</strong> is using 2491MB RAM — that's more than the entire Apollo 11 guidance computer had for going to the Moon</li><li>☕ <strong>kafka</strong> (54.7% CPU) is consuming more energy than the actual kafka in your coffee machine</li><li>🐘 <strong>mysql-db</strong> is hoarding 505MB — it's storing more in RAM than most people have photos</li><li>🦕 <strong>user-service</strong> needs 493MB RAM — a 2005 gaming PC had 512MB total and ran Doom 3</li><li>🤔 <strong>modest_northcutt</strong> uses 391MB just to exist — my first computer had 4MB and ran an OS</li></ul></div>
+
+<div class="section"><h2>🏅 Achievement Badges</h2><div class="metrics-grid"><div class="metric-card" style="text-align:center"><div class="metric-value" style="font-size:2rem">🔥</div><div class="metric-label"><strong>Burnout Risk</strong><br><span style="font-size:0.75rem">CPU at 126% — your servers are sweating</span></div></div><div class="metric-card" style="text-align:center"><div class="metric-value" style="font-size:2rem">🚀</div><div class="metric-label"><strong>Solid Performer</strong><br><span style="font-size:0.75rem">306 req/s — respectable throughput</span></div></div><div class="metric-card" style="text-align:center"><div class="metric-value" style="font-size:2rem">🪙</div><div class="metric-label"><strong>Penny Pincher</strong><br><span style="font-size:0.75rem">Only $0.8594/mo — incredibly cheap</span></div></div><div class="metric-card" style="text-align:center"><div class="metric-value" style="font-size:2rem">🐳</div><div class="metric-label"><strong>Container Collector</strong><br><span style="font-size:0.75rem">21 containers — you really like Docker</span></div></div></div></div>
+
+<div class="section">
+<h2>💡 Recommendations to Reduce Energy Consumption</h2>
+
+<h3>From Static Analysis</h3>
+<ul style="padding-left:1.5rem; color:var(--fg2);">
+
+<li><strong>I/O in loops:</strong> Batch database/file operations, use bulk APIs</li>
+<li><strong>N+1 queries:</strong> Use JOINs, eager loading, or batch fetching</li>
+<li><strong>Connection pooling:</strong> Configure connection pools for all external resources</li>
+<li><strong>Thread management:</strong> Use thread pools with bounded sizes</li>
+
+<li><strong>Compression:</strong> Enable gzip/brotli for HTTP responses to reduce network energy</li>
+
+</ul>
+
+<h3>From Runtime Analysis</h3><ul style='padding-left:1.5rem; color:var(--fg2);'><li><strong>Energy per request: 24039.0 mJ</strong> — consider caching frequent responses, reducing middleware chain, using HTTP/2</li><li><strong>High memory: 152 MB avg/service</strong> — use lighter base images (Alpine), reduce heap sizes, enable GC tuning</li><li><strong>General:</strong> Enable connection keep-alive, use async I/O, set resource limits on containers</li></ul>
+
+<h3>From Container Analysis</h3><ul style='padding-left:1.5rem; color:var(--fg2);'><li><strong>Total energy: 84.24J (5.62 Wh/hour)</strong> — identify top consumers and optimize or right-size them</li><li><strong>Heavy databases:</strong> Use connection pooling, query caching, read replicas to reduce DB CPU cycles</li><li><strong>Kafka overhead:</strong> Tune partition count, reduce replication factor in dev, increase batch.size and linger.ms</li><li><strong>Right-size containers:</strong> Set CPU/memory limits, use multi-stage builds for smaller images</li><li><strong>Scale to zero:</strong> Use serverless or scale-to-zero for rarely used services</li></ul>
+
+
+<h3>General Best Practices</h3>
+<ul style="padding-left:1.5rem; color:var(--fg2);">
+<li><strong>Choose efficient runtimes:</strong> Go, Rust → 5-20MB RAM vs Java/C# → 200-400MB RAM per service</li>
+<li><strong>Use Alpine/distroless images:</strong> Smaller images = less disk I/O, faster startup, less memory</li>
+<li><strong>Enable HTTP compression:</strong> gzip/brotli reduces network bytes by 60-90%</li>
+<li><strong>Implement caching:</strong> Redis/in-memory caches prevent repeated computation and DB queries</li>
+<li><strong>Async over sync:</strong> Use non-blocking I/O and message queues instead of synchronous chains</li>
+<li><strong>Auto-scaling:</strong> Scale down when demand drops — idle containers waste energy continuously</li>
+<li><strong>Measure continuously:</strong> Run this analysis in CI/CD to catch energy regressions early</li>
+</ul>
+</div>
+</div>
+
+<div class="section"><h2>📈 Trend Over Time <span style="font-size:1.5rem">→</span></h2>
+    <div style="display:flex;align-items:flex-end;height:120px;gap:4px;padding:1rem 0"><div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:4px"><div style="height:63px;width:24px;background:#eab308;border-radius:4px"></div><div style="font-size:0.7rem;color:var(--fg2)">63</div><div style="font-size:0.6rem;color:var(--fg2)">2026-06-22</div></div><div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:4px"><div style="height:63px;width:24px;background:#eab308;border-radius:4px"></div><div style="font-size:0.7rem;color:var(--fg2)">63</div><div style="font-size:0.6rem;color:var(--fg2)">2026-06-22</div></div><div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:4px"><div style="height:54px;width:24px;background:#f97316;border-radius:4px"></div><div style="font-size:0.7rem;color:var(--fg2)">54</div><div style="font-size:0.6rem;color:var(--fg2)">2026-06-22</div></div><div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:4px"><div style="height:54px;width:24px;background:#f97316;border-radius:4px"></div><div style="font-size:0.7rem;color:var(--fg2)">54</div><div style="font-size:0.6rem;color:var(--fg2)">2026-06-22</div></div><div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:4px"><div style="height:54px;width:24px;background:#f97316;border-radius:4px"></div><div style="font-size:0.7rem;color:var(--fg2)">54</div><div style="font-size:0.6rem;color:var(--fg2)">2026-06-22</div></div><div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:4px"><div style="height:54px;width:24px;background:#f97316;border-radius:4px"></div><div style="font-size:0.7rem;color:var(--fg2)">54</div><div style="font-size:0.6rem;color:var(--fg2)">2026-06-22</div></div><div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:4px"><div style="height:54px;width:24px;background:#f97316;border-radius:4px"></div><div style="font-size:0.7rem;color:var(--fg2)">54</div><div style="font-size:0.6rem;color:var(--fg2)">2026-06-22</div></div></div>
+    <p class="note">Last 7 runs shown. Score unchanged →</p></div>
+</div>
+
+<script>
+function getPreferred() { return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
+function setTheme(t) { document.documentElement.setAttribute('data-theme', t); localStorage.setItem('energy-theme', t); }
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    const effective = current === 'auto' ? getPreferred() : current;
+    setTheme(effective === 'dark' ? 'light' : 'dark');
+}
+(function() {
+    const saved = localStorage.getItem('energy-theme');
+    if (saved) setTheme(saved);
+    else setTheme(getPreferred());
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        if (!localStorage.getItem('energy-theme') || localStorage.getItem('energy-theme') === 'auto')
+            setTheme(e.matches ? 'dark' : 'light');
+    });
+})();
+</script>
+</body>
+</html>

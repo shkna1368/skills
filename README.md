@@ -8,6 +8,7 @@ A collection of AI assistant skills for solving real-world problems.
 |-------|-------------|
 | [constraint-solver](constraint-solver/) | Solve constraint satisfaction & optimization problems with 4 solvers in parallel (OR-Tools, Timefold, Choco, Z3) |
 | [doc-check](doc-check/) | Validate source code against official framework documentation via docpilot MCP. Detects framework, queries real docs, reports compliance with ✅/⚠️/❌ verdicts and fixes. |
+| [energy-consumption](energy-consumption/) | Measure energy consumption of microservices via static analysis, Dockerfile scanning, and runtime load testing. Generates HTML report with CO₂ emissions, cloud cost estimates, region recommendations, per-service energy, and fun comparisons. |
 | [microbench](microbench/) | Benchmark Java methods using JMH in Spring Boot and Quarkus projects. Detects anti-patterns (N+1, Thread.sleep, race conditions) and generates HTML report with fix recommendations. |
 | [performance-engineer](performance-engineer/) | Profile and diagnose microservices for performance bottlenecks across Java, Go, Rust, Python, Node.js, and .NET. Load test, profile (async-profiler, JFR, pprof, py-spy), find root cause, and fix. |
 | [redteam](redteam/) | Adversarial security analysis — finds vulnerabilities, exploit chains, business logic flaws. Generates HTML report with CVSS scores, CWE mappings, PoC, and remediation. |
@@ -17,6 +18,7 @@ A collection of AI assistant skills for solving real-world problems.
 ```bash
 npx skills add shkna1368/skills --skill constraint-solver
 npx skills add shkna1368/skills --skill doc-check
+npx skills add shkna1368/skills --skill energy-consumption
 npx skills add shkna1368/skills --skill microbench
 npx skills add shkna1368/skills --skill performance-engineer
 npx skills add shkna1368/skills --skill redteam
@@ -30,6 +32,7 @@ npx skills add shkna1368/skills --skill redteam
 ```bash
 # Install individual skills
 claude mcp add skills-constraint-solver -- npx -y skills run shkna1368/skills --skill constraint-solver
+claude mcp add skills-energy-consumption -- npx -y skills run shkna1368/skills --skill energy-consumption
 claude mcp add skills-doc-check -- npx -y skills run shkna1368/skills --skill doc-check
 claude mcp add skills-microbench -- npx -y skills run shkna1368/skills --skill microbench
 claude mcp add skills-performance-engineer -- npx -y skills run shkna1368/skills --skill performance-engineer
@@ -43,6 +46,7 @@ claude mcp add skills-redteam -- npx -y skills run shkna1368/skills --skill redt
 ```bash
 npx skills install shkna1368/skills --skill constraint-solver --client kiro
 npx skills install shkna1368/skills --skill doc-check --client kiro
+npx skills install shkna1368/skills --skill energy-consumption --client kiro
 npx skills install shkna1368/skills --skill microbench --client kiro
 npx skills install shkna1368/skills --skill performance-engineer --client kiro
 npx skills install shkna1368/skills --skill redteam --client kiro
@@ -57,6 +61,7 @@ Or copy each skill's `SKILL.md` to `.kiro/skills/<skill-name>/SKILL.md` in your 
 ```bash
 npx skills install shkna1368/skills --skill constraint-solver --client codex
 npx skills install shkna1368/skills --skill doc-check --client codex
+npx skills install shkna1368/skills --skill energy-consumption --client codex
 npx skills install shkna1368/skills --skill microbench --client codex
 npx skills install shkna1368/skills --skill performance-engineer --client codex
 npx skills install shkna1368/skills --skill redteam --client codex
@@ -71,6 +76,7 @@ Or copy `SKILL.md` content into your Codex instructions file (`AGENTS.md` or `co
 ```bash
 npx skills install shkna1368/skills --skill constraint-solver --client cursor
 npx skills install shkna1368/skills --skill doc-check --client cursor
+npx skills install shkna1368/skills --skill energy-consumption --client cursor
 npx skills install shkna1368/skills --skill microbench --client cursor
 npx skills install shkna1368/skills --skill performance-engineer --client cursor
 npx skills install shkna1368/skills --skill redteam --client cursor
@@ -85,6 +91,7 @@ Or copy each skill's `SKILL.md` to `.cursor/rules/<skill-name>.md` in your proje
 ```bash
 npx skills install shkna1368/skills --skill constraint-solver --client windsurf
 npx skills install shkna1368/skills --skill doc-check --client windsurf
+npx skills install shkna1368/skills --skill energy-consumption --client windsurf
 npx skills install shkna1368/skills --skill microbench --client windsurf
 npx skills install shkna1368/skills --skill performance-engineer --client windsurf
 npx skills install shkna1368/skills --skill redteam --client windsurf
@@ -103,6 +110,7 @@ Copy each skill's `SKILL.md` to `.amazonq/rules/<skill-name>.md` in your project
 mkdir -p .amazonq/rules
 cp constraint-solver/SKILL.md .amazonq/rules/constraint-solver.md
 cp doc-check/SKILL.md .amazonq/rules/doc-check.md
+cp energy-consumption/SKILL.md .amazonq/rules/energy-consumption.md
 cp microbench/SKILL.md .amazonq/rules/microbench.md
 cp performance-engineer/SKILL.md .amazonq/rules/performance-engineer.md
 cp redteam/SKILL.md .amazonq/rules/redteam.md

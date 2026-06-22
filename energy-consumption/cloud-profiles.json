@@ -1,0 +1,79 @@
+{
+  "cloud_profiles": {
+    "aws": {
+      "name": "Amazon Web Services",
+      "price_per_kwh": 0.05,
+      "regions": {
+        "us-east-1": {"name": "N. Virginia", "carbon_g_per_kwh": 379, "price_per_kwh": 0.045},
+        "us-west-2": {"name": "Oregon", "carbon_g_per_kwh": 117, "price_per_kwh": 0.043},
+        "eu-west-1": {"name": "Ireland", "carbon_g_per_kwh": 296, "price_per_kwh": 0.052},
+        "eu-north-1": {"name": "Stockholm", "carbon_g_per_kwh": 8, "price_per_kwh": 0.055},
+        "eu-central-1": {"name": "Frankfurt", "carbon_g_per_kwh": 338, "price_per_kwh": 0.058},
+        "ap-southeast-1": {"name": "Singapore", "carbon_g_per_kwh": 408, "price_per_kwh": 0.06},
+        "ap-northeast-1": {"name": "Tokyo", "carbon_g_per_kwh": 463, "price_per_kwh": 0.062},
+        "ca-central-1": {"name": "Canada", "carbon_g_per_kwh": 26, "price_per_kwh": 0.048}
+      }
+    },
+    "azure": {
+      "name": "Microsoft Azure",
+      "price_per_kwh": 0.055,
+      "regions": {
+        "eastus": {"name": "East US", "carbon_g_per_kwh": 379, "price_per_kwh": 0.048},
+        "westus2": {"name": "West US 2", "carbon_g_per_kwh": 117, "price_per_kwh": 0.046},
+        "northeurope": {"name": "North Europe (Ireland)", "carbon_g_per_kwh": 296, "price_per_kwh": 0.054},
+        "swedencentral": {"name": "Sweden Central", "carbon_g_per_kwh": 8, "price_per_kwh": 0.052},
+        "germanywestcentral": {"name": "Germany West", "carbon_g_per_kwh": 338, "price_per_kwh": 0.06},
+        "southeastasia": {"name": "Southeast Asia", "carbon_g_per_kwh": 408, "price_per_kwh": 0.058},
+        "canadacentral": {"name": "Canada Central", "carbon_g_per_kwh": 26, "price_per_kwh": 0.05}
+      }
+    },
+    "gcp": {
+      "name": "Google Cloud Platform",
+      "price_per_kwh": 0.048,
+      "regions": {
+        "us-east1": {"name": "South Carolina", "carbon_g_per_kwh": 379, "price_per_kwh": 0.044},
+        "us-west1": {"name": "Oregon", "carbon_g_per_kwh": 117, "price_per_kwh": 0.042},
+        "europe-west1": {"name": "Belgium", "carbon_g_per_kwh": 148, "price_per_kwh": 0.05},
+        "europe-north1": {"name": "Finland", "carbon_g_per_kwh": 71, "price_per_kwh": 0.053},
+        "europe-west4": {"name": "Netherlands", "carbon_g_per_kwh": 328, "price_per_kwh": 0.055},
+        "asia-southeast1": {"name": "Singapore", "carbon_g_per_kwh": 408, "price_per_kwh": 0.058},
+        "northamerica-northeast1": {"name": "Montreal", "carbon_g_per_kwh": 26, "price_per_kwh": 0.045}
+      }
+    },
+    "custom": {
+      "name": "Custom / On-Premise",
+      "price_per_kwh": 0.10,
+      "regions": {
+        "default": {"name": "Global Average", "carbon_g_per_kwh": 400, "price_per_kwh": 0.10}
+      }
+    }
+  },
+  "country_carbon_intensity": {
+    "SE": {"name": "Sweden", "carbon_g_per_kwh": 8},
+    "NO": {"name": "Norway", "carbon_g_per_kwh": 17},
+    "FR": {"name": "France", "carbon_g_per_kwh": 56},
+    "CA": {"name": "Canada", "carbon_g_per_kwh": 26},
+    "FI": {"name": "Finland", "carbon_g_per_kwh": 71},
+    "US-OR": {"name": "US (Oregon)", "carbon_g_per_kwh": 117},
+    "BE": {"name": "Belgium", "carbon_g_per_kwh": 148},
+    "UK": {"name": "United Kingdom", "carbon_g_per_kwh": 231},
+    "IE": {"name": "Ireland", "carbon_g_per_kwh": 296},
+    "NL": {"name": "Netherlands", "carbon_g_per_kwh": 328},
+    "DE": {"name": "Germany", "carbon_g_per_kwh": 338},
+    "US-VA": {"name": "US (Virginia)", "carbon_g_per_kwh": 379},
+    "GLOBAL": {"name": "Global Average", "carbon_g_per_kwh": 400},
+    "SG": {"name": "Singapore", "carbon_g_per_kwh": 408},
+    "JP": {"name": "Japan", "carbon_g_per_kwh": 463},
+    "AU": {"name": "Australia", "carbon_g_per_kwh": 530},
+    "IN": {"name": "India", "carbon_g_per_kwh": 632},
+    "CN": {"name": "China", "carbon_g_per_kwh": 555},
+    "PL": {"name": "Poland", "carbon_g_per_kwh": 635},
+    "ZA": {"name": "South Africa", "carbon_g_per_kwh": 709}
+  },
+  "defaults": {
+    "cloud": "aws",
+    "region": "us-east-1",
+    "carbon_g_per_kwh": 400,
+    "price_per_kwh": 0.05
+  }
+}
